@@ -24,7 +24,7 @@ with st.expander("System Guidelines & Target Interface Identifiers", expanded=Fa
     | **ID Mapping Profile** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` |
     | **Basic Personal** | `Personal` | `FULL_SFS_BASIC_PERSONLA_MK_*` |
     | **Basic School** | `School` | `FULL_SFF_BASIC_SCHOOL_MK_*` |
-    """)
+    
 
 st.markdown("### 📤 Source File Upload")
 uploaded_files = st.file_uploader(
