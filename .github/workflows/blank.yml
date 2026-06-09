@@ -1,40 +1,44 @@
 name: Generate Test Data (Excel to XML Zip)
 
 on:
-  # Cho phép bạn bấm nút "Run workflow" bằng tay bất cứ lúc nào trên giao diện GitHub
   workflow_dispatch:
+
+# Tự động cấu hình ép các Action chạy trên nền Node.js 24 để xóa sạch cảnh báo ẩn
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   build-and-convert:
     runs-on: ubuntu-latest
 
     steps:
-    # Bước 1: Clone source code từ repo vào máy ảo của GitHub
     - name: Checkout Repository
       uses: actions/checkout@v4
 
-    # Bước 2: Khởi tạo môi trường Python 3.12 trên máy ảo
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-        cache: 'pip' # Tối ưu tốc độ cài đặt thư viện cho các lần chạy sau
+        cache: 'pip'
 
-    # Bước 3: Cài đặt các thư viện cần thiết (Pandas & Openpyxl)
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pandas openpyxl
 
-    # Bước 4: Chạy file script Python để tạo file XML và nén ZIP
+    # Bước bổ sung: Liệt kê file để kiểm tra xem bạn đã push đủ file lên chưa
+    - name: Debug - List Files in Workspace
+      run: |
+        echo "=== Checking available files in GitHub Workspace ==="
+        ls -la
+
     - name: Run Excel to XML Script
       run: |
         python excel_to_xml.py
 
-    # Bước 5: Đẩy file .zip vừa tạo lên hệ thống lưu trữ của GitHub (Artifacts)
     - name: Upload Generated Zip Artifact
       uses: actions/upload-artifact@v4
       with:
         name: converted-xml-zip-data
-        path: FULL_SFS_ID_MAPPING_MK_*.zip # Nhận diện file zip động theo thời gian thực
-        retention-days: 7 # File sẽ tự động xóa sau 7 ngày để tiết kiệm dung lượng repo
+        path: FULL_SFS_ID_MAPPING_MK_*.zip
+        retention-days: 7
