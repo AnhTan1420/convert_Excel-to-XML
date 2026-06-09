@@ -18,12 +18,13 @@ if "run_summary" not in st.session_state:
 
 # Collapsible Documentation Matrix
 with st.expander("System Guidelines & Target Interface Identifiers", expanded=False):
-    
+st.markdown("""
     | Target System Interface | Accepted File Keyword | Generated Payload Prefix |
     | :--- | :--- | :--- |
     | **ID Mapping Profile** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` |
     | **Basic Personal** | `Personal` | `FULL_SFS_BASIC_PERSONLA_MK_*` |
     | **Basic School** | `School` | `FULL_SFF_BASIC_SCHOOL_MK_*` |
+    """)
     
 
 st.markdown("### 📤 Source File Upload")
