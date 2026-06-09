@@ -41,7 +41,7 @@ MAPPING_RULES = {
 }
 
 if uploaded_files:
-    st.info(f"📋 **Stage Queue:** {len(uploaded_files)} file(s) loaded into session memory.")
+    st.info(f"**Stage Queue:** {len(uploaded_files)} file(s) loaded into session memory.")
     
     if st.button("Execute Transformation", type="primary", use_container_width=True):
         zip_buffer = io.BytesIO()
@@ -122,7 +122,7 @@ if uploaded_files:
         # Render a clean executive dashboard post-run
         if success_count > 0:
             st.markdown("---")
-            st.markdown("### 📊 Execution Run Summary")
+            st.markdown("### Execution Run Summary")
             col1, col2 = st.columns(2)
             with col1:
                 st.metric(label="Generated Payloads", value=f"{success_count} / {len(uploaded_files)}")
