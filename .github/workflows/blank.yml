@@ -3,7 +3,6 @@ name: Generate Test Data (Excel to XML Zip)
 on:
   workflow_dispatch:
 
-# Tự động cấu hình ép các Action chạy trên nền Node.js 24 để xóa sạch cảnh báo ẩn
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
@@ -26,10 +25,10 @@ jobs:
         python -m pip install --upgrade pip
         pip install pandas openpyxl
 
-    # Bước bổ sung: Liệt kê file để kiểm tra xem bạn đã push đủ file lên chưa
-    - name: Debug - List Files in Workspace
+    # Bước rà soát file: Giúp bạn nhìn rõ trên log xem file đã lên sàn máy ảo chưa
+    - name: Debug - List Repository Files
       run: |
-        echo "=== Checking available files in GitHub Workspace ==="
+        echo "=== Current working directory content ==="
         ls -la
 
     - name: Run Excel to XML Script

@@ -32,7 +32,7 @@ def generate_xml_from_excel(xlsx_path, xml_output_path):
         return
         
     # Read Excel file, casting all columns to string to avoid Excel numeric formatting issues
-    df = pd.read_excel(xlsx_path, dtype=str)
+    df = pd.read_excel(xlsx_path, dtype=str, engine='openpyxl')
     
     # Replace empty cells (NaN in Pandas) with Python's None type
     df = df.where(pd.notnull(df), None)
@@ -83,19 +83,25 @@ def generate_xml_from_excel(xlsx_path, xml_output_path):
     print(f"3. Total processed records (NO_RECORD): {len(df)}")
 
 if __name__ == "__main__":
-    # Configure input Excel file path
-    excel_input = "ID_Mapping_TestData.xlsx"
-    
-    # 1. Get current real-time timestamp (YYYYMMDDHHMMSS)
-    current_time = time.strftime('%Y%m%d%H%M%S')
-    
-    # 2. Generate dynamic real-time filenames for both XML and ZIP
-    xml_output = f"FULL_SFS_ID_MAPPING_MK_{current_time}.xml"
-    zip_output = f"FULL_SFS_ID_MAPPING_MK_{current_time}.zip"
-    
-    # Step 1: Generate the XML file from Excel data
-    generate_xml_from_excel(excel_input, xml_output)
-    
-    # Step 2: Compress the newly generated XML file into a ZIP archive
-    if os.path.exists(xml_output):
-        compress_file_to_zip(xml_output, zip_output)
+    try:
+        # Configure input Excel file path
+        excel_input = "ID_Mapping_TestData.xlsx"
+        
+        # 1. Get current real-time timestamp (YYYYMMDDHHMMSS)
+        current_time = time.strftime('%Y%m%d%H%M%S')
+        
+        # 2. Generate dynamic real-time filenames for both XML and ZIP
+        xml_output = f"FULL_SFS_ID_MAPPING_MK_{current_time}.xml"
+        zip_output = f"FULL_SFS_ID_MAPPING_MK_{current_time}.zip"
+        
+        # Step 1: Generate the XML file from Excel data
+        generate_xml_from_excel(excel_input, xml_output)
+        
+        # Step 2: Compress the newly generated XML file into a ZIP archive
+        if os.path.exists(xml_output):
+            compress_file_to_zip(xml_output, zip_output)
+            
+    except Exception as main_error:
+        print(f"❌ CRITICAL ERROR IN MAIN EXECUTION: {main_error}")
+        import sys
+        sys.exit(1) # Ép trả về code 1 để hiện rõ lỗi Traceback trên GitHub
