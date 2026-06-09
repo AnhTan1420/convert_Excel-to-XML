@@ -6,10 +6,9 @@ import io
 import zipfile
 
 # App Workspace Configuration
-st.set_page_config(page_title="Test Data Engine", page_icon="⚙️", layout="centered")
+st.set_page_config(page_title="MOE Jordan", page_icon="⚙️", layout="centered")
 
-st.title("⚙️ Automated Test Data Provisioning Portal")
-st.markdown("Streamline UAT setups by transforming staging Excel spreadsheets into individual schema-compliant ZIP payloads.")
+st.title("MOE CONVERT EXCEL to XML(ZIP)")
 
 # Initialize Session States to prevent download button data-loss on click
 if "download_queue" not in st.session_state:
@@ -18,16 +17,13 @@ if "run_summary" not in st.session_state:
     st.session_state.run_summary = {"success_count": 0, "total_records": 0}
 
 # Collapsible Documentation Matrix
-with st.expander("📘 System Guidelines & Target Interface Identifiers", expanded=False):
-    st.markdown("""
-    The processing engine matches files based on case-insensitive keyword tokens within the filename. 
-    Each valid file type will generate its own dedicated, isolated ZIP archive.
+with st.expander("System Guidelines & Target Interface Identifiers", expanded=False):
     
     | Target System Interface | Accepted File Keyword | Generated Payload Prefix |
     | :--- | :--- | :--- |
     | **ID Mapping Profile** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` |
-    | **Personal Info Data** | `Personal` | `FULL_SFS_BASIC_PERSONLA_MK_*` |
-    | **School Metadata** | `School` | `FULL_SFF_BASIC_SCHOOL_MK_*` |
+    | **Basic Personal** | `Personal` | `FULL_SFS_BASIC_PERSONLA_MK_*` |
+    | **Basic School** | `School` | `FULL_SFF_BASIC_SCHOOL_MK_*` |
     """)
 
 st.markdown("### 📤 Source File Upload")
@@ -46,9 +42,9 @@ MAPPING_RULES = {
 }
 
 if uploaded_files:
-    st.info(f"📋 **Stage Queue:** {len(uploaded_files)} file(s) loaded into session memory.")
+    st.info(f"**Stage Queue:** {len(uploaded_files)} file(s) loaded into session memory.")
     
-    if st.button("🚀 Execute Split Transformation", type="primary", use_container_width=True):
+    if st.button("Execute Split Transformation", type="primary", use_container_width=True):
         # Reset local cache queue for the new execution run
         st.session_state.download_queue = []
         success_count = 0
@@ -142,7 +138,7 @@ if uploaded_files:
     # Persistent UI Rendering Section (Executes seamlessly outside/after the button click process)
     if st.session_state.download_queue:
         st.markdown("---")
-        st.markdown("### 📊 Execution Run Summary")
+        st.markdown("### Execution Run Summary")
         col1, col2 = st.columns(2)
         with col1:
             st.metric(label="Generated Payloads", value=f"{st.session_state.run_summary['success_count']} File(s)")
@@ -151,8 +147,8 @@ if uploaded_files:
         
         st.balloons()
         
-        st.markdown("### 📥 Individual Payload Downloads")
-        st.write("The engine has isolated your payloads. Download the respective ZIP configurations below:")
+        st.markdown("### 📥 Payload Downloads")
+        st.write("Download the respective ZIP configurations below:")
         
         # Display separate download block layout for each successfully generated prefix
         for item in st.session_state.download_queue:
