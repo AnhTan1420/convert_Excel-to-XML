@@ -18,7 +18,7 @@ if "run_summary" not in st.session_state:
 
 # Collapsible Documentation Matrix
 with st.expander("System Guidelines & Target Interface Identifiers", expanded=False):
-st.markdown("""
+  st.markdown("""
     The processing engine matches files based on case-insensitive keyword tokens within the filename. 
     Each valid file type will generate its own dedicated, isolated ZIP archive.
     
