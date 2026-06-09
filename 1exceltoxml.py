@@ -18,8 +18,10 @@ if "run_summary" not in st.session_state:
 
 # Collapsible Documentation Matrix
 with st.expander("System Guidelines & Target Interface Identifiers", expanded=False):
-st.markdown(""" 
+st.markdown("""
+    The processing engine matches files based on case-insensitive keyword tokens within the filename. 
     Each valid file type will generate its own dedicated, isolated ZIP archive.
+    
     | Target System Interface | Accepted File Keyword | Generated Payload Prefix |
     | :--- | :--- | :--- |
     | **ID Mapping Profile** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` |
@@ -27,7 +29,6 @@ st.markdown("""
     | **Basic School** | `School` | `FULL_SFF_BASIC_SCHOOL_MK_*` |
     """)
     
-
 st.markdown("### 📤 Source File Upload")
 uploaded_files = st.file_uploader(
     "Drag and drop or browse Excel workbooks (.xlsx)", 
