@@ -9,7 +9,6 @@ import zipfile
 st.set_page_config(page_title="Test Data Engine", page_icon="⚙️", layout="centered")
 
 st.title("MOE convert from XLSS to XML(ZIP)")
-st.markdown("Streamline UAT setups by transforming staging Excel spreadsheets into fully schema-compliant interface XML payloads.")
 
 # Collapsible Documentation Matrix to clean up the main view
 with st.expander("📘 System Guidelines & Target Interface Identifiers", expanded=False):
@@ -28,7 +27,7 @@ with st.expander("📘 System Guidelines & Target Interface Identifiers", expand
 
 st.markdown("### 📤 Source File Upload")
 uploaded_files = st.file_uploader(
-    "Drag and drop or browse Excel workbooks (.xlsx)", 
+    "Drag and drop or browse Excel files (.xlsx)", 
     type=["xlsx"], 
     accept_multiple_files=True
 )
