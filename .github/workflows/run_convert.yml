@@ -18,7 +18,6 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-        # Đã xóa dòng cache: 'pip' ở đây để không bị bắt lỗi tìm requirements.txt
 
     - name: Install Dependencies
       run: |
@@ -30,10 +29,7 @@ jobs:
         echo "=== Current working directory content ==="
         ls -la
 
-    # Sửa lại bước chạy script trong file .yml của bạn như thế này:
     - name: Run Excel to XML Script
-      # Thay 'src' bằng tên thư mục chứa file python của bạn nếu có
-      working-directory: ./src 
       run: |
         python excel_to_xml.py
 
