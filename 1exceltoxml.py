@@ -43,7 +43,7 @@ MAPPING_RULES = {
 if uploaded_files:
     st.info(f"📋 **Stage Queue:** {len(uploaded_files)} file(s) loaded into session memory.")
     
-    if st.button("🚀 Execute Transformation", type="primary", use_container_width=True):
+    if st.button("Execute Transformation", type="primary", use_container_width=True):
         zip_buffer = io.BytesIO()
         current_time = time.strftime('%Y%m%d%H%M%S')
         success_count = 0
@@ -129,7 +129,6 @@ if uploaded_files:
             with col2:
                 st.metric(label="Total Dataset Records", value=f"{total_records_processed} Rows")
             
-            st.balloons()
             
             # Master file bundle extraction terminal
             st.download_button(
