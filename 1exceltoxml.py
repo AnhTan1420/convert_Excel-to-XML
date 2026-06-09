@@ -19,9 +19,9 @@ with st.expander("📘 System Guidelines & Target Interface Identifiers", expand
     
     | Target System Interface | Accepted File Keyword | Generated Payload Prefix |
     | :--- | :--- | :--- |
-    | **ID Mapping Profile** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` |
-    | **Personal Info Data** | `Personal` | `FULL_SFS_BASIC_PERSONLA_MK_*` |
-    | **School Metadata** | `School` | `FULL_SFF_BASIC_SCHOOL_MK_*` |
+    | **ID Mapping** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` |
+    | **Basic Personal** | `Personal` | `FULL_SFS_BASIC_PERSONLA_MK_*` |
+    | **Basic School** | `School` | `FULL_SFF_BASIC_SCHOOL_MK_*` |
     
     *Note: The system ignores Excel temporary ownership files (`~$...`). Only columns containing data rows bound to a valid `UNIQUE_ID` are parsed.*
     """)
