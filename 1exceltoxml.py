@@ -148,7 +148,6 @@ if uploaded_files:
         with col2:
             st.metric(label="Total Dataset Records", value=f"{st.session_state.run_summary['total_records']} Rows")
         
-        st.balloons()
         
         st.markdown("### 📥 Payload Downloads")
         st.write("Download the respective ZIP configurations below:")
