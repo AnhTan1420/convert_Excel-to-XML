@@ -64,7 +64,7 @@ if uploaded_files:
                     matched_rule = rule
                     break
             
-           if matched_rule:
+if matched_rule:
                     prefix = matched_rule["prefix"]
                     interface = matched_rule["interface"]
                     xml_filename = f"{prefix}_{current_time}.xml"
