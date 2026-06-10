@@ -8,7 +8,7 @@ import zipfile
 # App Workspace Configuration
 st.set_page_config(page_title="MOE Jordan", page_icon="⚙️", layout="centered")
 
-st.title("MOE convert XLSS to XML then compress to ZIP")
+st.title("MOE convert XLSX to XML then compress to ZIP")
 
 # Initialize Session States to prevent download button data-loss on click
 if "download_queue" not in st.session_state:
@@ -25,8 +25,8 @@ with st.expander("📘 System Guidelines & Target Interface Identifiers", expand
     | Target System Interface | Accepted File Keyword | Generated Payload Prefix | XML Row Structure |
     | :--- | :--- | :--- | :--- |
     | **ID Mapping Profile** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` | `<ID_Mapping UNIQUE_ID="...">` |
-    | **Basic Personal** | `Personal` | `FULL_SFS_BASIC_PERSONLA_MK_*` | `<STUDENT_BASIC_PERSONAL>` + Attr |
-    | **Basic School** | `School` | `FULL_SFF_BASIC_SCHOOL_MK_*` | `<STUDENT_BASIC_SCHOOL>` + Attr |
+    | **Basic Personal** | `Personal` | `FULL_SFS_STUDENT_BASIC_PERSONAL_MK_*` | `<STUDENT_BASIC_PERSONAL>` + Attr |
+    | **Basic School** | `School` | `FULL_SFF_STUDENT_BASIC_SCHOOL_MK_*` | `<STUDENT_BASIC_SCHOOL>` + Attr |
     """)
 
 st.markdown("### 📤 Source File Upload")
@@ -75,9 +75,18 @@ if uploaded_files:
                 is_school = (prefix == "FULL_SFF_STUDENT_BASIC_SCHOOL_MK")
                 
                 try:
-                    # Extract data elements
-                    df = pd.read_excel(uploaded_file, dtype=str, engine='openpyxl')
-                    df = df.where(pd.notnull(df), None)
+                    # Đọc file Excel vào DataFrame (giữ engine openpyxl để chạy ổn định trên cloud)
+                    df = pd.read_excel(uploaded_file, engine='openpyxl')
+                    
+                    # THAY THẾ: Xử lý các ô trống (NaN) thành chuỗi rỗng "" trước, rồi mới ép kiểu string
+                    df = df.fillna("")
+                    df = df.astype(str)
+                    
+                    # Mẹo nhỏ: Loại bỏ luôn dấu chấm ".0" phát sinh ở các cột số do Pandas tự dịch sang kiểu float
+                    for col in df.columns:
+                        df[col] = df[col].apply(
+                            lambda x: x.split(".")[0] if x.endswith(".0") else x
+                        )
                     
                     # Initialize XML Element Tree Structure
                     NS = 'http://www.w3.org/2001/XMLSchema-instance'
@@ -92,7 +101,8 @@ if uploaded_files:
                     
                     # Process rows dynamically based on the file type rule
                     for index, row in df.iterrows():
-                        if 'UNIQUE_ID' not in df.columns or row['UNIQUE_ID'] is None:
+                        # Kiểm tra chuỗi rỗng thay vì None do đã qua bước fillna("")
+                        if 'UNIQUE_ID' not in df.columns or row['UNIQUE_ID'] == "":
                             continue
                         
                         unique_id_val = str(row['UNIQUE_ID'])
@@ -119,7 +129,9 @@ if uploaded_files:
                                 
                             child = ET.SubElement(row_element, col_name)
                             val = row[col_name]
-                            if val is None:
+                            
+                            # Kiểm tra nếu giá trị là chuỗi rỗng thì gán thuộc tính nil="true"
+                            if val == "":
                                 child.set(f"{{{NS}}}nil", "true")
                             else:
                                 child.text = str(val)
@@ -170,7 +182,6 @@ if uploaded_files:
             st.metric(label="Generated Payloads", value=f"{st.session_state.run_summary['success_count']} File(s)")
         with col2:
             st.metric(label="Total Dataset Records", value=f"{st.session_state.run_summary['total_records']} Rows")
-        
         
         st.write("The processing has generated zip files:")
         
