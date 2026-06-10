@@ -71,7 +71,8 @@ if uploaded_files:
                 zip_filename = f"{prefix}_{current_time}.zip"
                 
                 # Check if the file is the specific School file type
-                is_school = (prefix == "FULL_SFS_STUDENT_BASIC_PERSONAL_MK")
+                is_personal = (prefix == "FULL_SFS_STUDENT_BASIC_PERSONAL_MK")
+                is_school = (prefix == "FULL_SFS_STUDENT_BASIC_SCHOOL_MK")
                 
                 try:
                     # Extract data elements
@@ -97,9 +98,18 @@ if uploaded_files:
                         unique_id_val = str(row['UNIQUE_ID'])
                         
                         # Apply conditional branching for XML tags
-                        if is_school:
+                        if is_personal:
                             # Specialized tags for School data
                             row_element = ET.SubElement(root, 'STUDENT_BASIC_PERSONAL')
+                            uid_child = ET.SubElement(row_element, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'})
+                            uid_child.text = unique_id_val
+                        else:
+                            # Standard generic tags for Mapping and Personal data
+                            row_element = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': unique_id_val})
+
+                         if is_school:
+                            # Specialized tags for School data
+                            row_element = ET.SubElement(root, 'STUDENT_BASIC_SCHOOL')
                             uid_child = ET.SubElement(row_element, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'})
                             uid_child.text = unique_id_val
                         else:
