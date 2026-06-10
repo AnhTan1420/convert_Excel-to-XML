@@ -25,8 +25,8 @@ with st.expander("📘 System Guidelines & Target Interface Identifiers", expand
     | Target System Interface | Accepted File Keyword | Generated Payload Prefix | XML Row Structure |
     | :--- | :--- | :--- | :--- |
     | **ID Mapping Profile** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` | `<ID_Mapping UNIQUE_ID="...">` |
-    | **Personal Info Data** | `Personal` | `FULL_SFS_BASIC_PERSONLA_MK_*` | `<ID_Mapping UNIQUE_ID="...">` |
-    | **School Metadata** | `School` | `FULL_SFF_BASIC_SCHOOL_MK_*` | `<STUDENT_BASIC_PERSONAL>` + Attribute |
+    | **Basic Personal** | `Personal` | `FULL_SFS_BASIC_PERSONLA_MK_*` | `<STUDENT_BASIC_PERSONAL>` + Attribute` |
+    | **Basic School** | `School` | `FULL_SFF_BASIC_SCHOOL_MK_*` | `Pending |
     """)
 
 st.markdown("### 📤 Source File Upload")
@@ -41,7 +41,7 @@ MAPPING_RULES = {
     "MAPPING": {"prefix": "FULL_SFS_ID_MAPPING_MK", "interface": "STUDENT_ID_Mapping_INFO"},
     "PERSONAL": {"prefix": "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "interface": "STUDENT_Personal_INFO"},
     "PERSONLA": {"prefix": "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "interface": "STUDENT_Personal_INFO"}, # Legacy typo fallback
-    "SCHOOL": {"prefix": "FULL_SFF_STUDENT_BASIC_SCHOOL_MK", "interface": "STUDENT_School_INFO"}
+    "SCHOOL": {"prefix": "FULL_SFS_STUDENT_BASIC_SCHOOL_MK", "interface": "STUDENT_School_INFO"}
 }
 
 if uploaded_files:
@@ -71,7 +71,7 @@ if uploaded_files:
                 zip_filename = f"{prefix}_{current_time}.zip"
                 
                 # Check if the file is the specific School file type
-                is_school = (prefix == "FULL_SFF_BASIC_SCHOOL_MK")
+                is_school = (prefix == "FULL_SFS_STUDENT_BASIC_PERSONAL_MK")
                 
                 try:
                     # Extract data elements
