@@ -39,8 +39,8 @@ uploaded_files = st.file_uploader(
 # Rule Mapping Engine Configuration
 MAPPING_RULES = {
     "MAPPING": {"prefix": "FULL_SFS_ID_MAPPING_MK", "interface": "STUDENT_ID_Mapping_INFO"},
-    "PERSONAL": {"prefix": "FULL_SFS_BASIC_PERSONLA_MK", "interface": "STUDENT_Personal_INFO"},
-    "PERSONLA": {"prefix": "FULL_SFS_BASIC_PERSONLA_MK", "interface": "STUDENT_Personal_INFO"},
+    "PERSONAL": {"prefix": "FULL_SFS_BASIC_PERSONAL_MK", "interface": "STUDENT_Personal_INFO"},
+    "PERSONLA": {"prefix": "FULL_SFS_BASIC_PERSONAL_MK", "interface": "STUDENT_Personal_INFO"},
     "SCHOOL": {"prefix": "FULL_SFF_BASIC_SCHOOL_MK", "interface": "STUDENT_School_INFO"}
 }
 
