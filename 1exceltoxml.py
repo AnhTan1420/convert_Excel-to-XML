@@ -166,8 +166,7 @@ if uploaded_files:
             st.metric(label="Total Dataset Records", value=f"{st.session_state.run_summary['total_records']} Rows")
         
 
-        st.markdown("### 📥 Individual Payload Downloads")
-        st.write("The processing pipeline has generated individual target zip files:")
+        st.markdow("The processing has generated zip files:")
         
         # Loop through the memory queue to build segmented container layouts
         for item in st.session_state.download_queue:
