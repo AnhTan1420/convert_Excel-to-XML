@@ -64,73 +64,64 @@ if uploaded_files:
                     matched_rule = rule
                     break
             
-            if matched_rule:
-                prefix = matched_rule["prefix"]
-                interface = matched_rule["interface"]
-                xml_filename = f"{prefix}_{current_time}.xml"
-                zip_filename = f"{prefix}_{current_time}.zip"
-                
-                try:
-                    # Extract data elements
-                    df = pd.read_excel(uploaded_file, dtype=str, engine='openpyxl')
-                    df = df.where(pd.notnull(df), None)
+           if matched_rule:
+                    prefix = matched_rule["prefix"]
+                    interface = matched_rule["interface"]
+                    xml_filename = f"{prefix}_{current_time}.xml"
+                    zip_filename = f"{prefix}_{current_time}.zip"
                     
-                    # Initialize XML Element Tree Structure
-                    NS = 'http://www.w3.org/2001/XMLSchema-instance'
-                    ET.register_namespace('xs', NS)
+                    # Kiểm tra xem có phải là file cấu hình School hay không
+                    is_school = (prefix == "FULL_SFF_BASIC_SCHOOL_MK")
                     
-                    root = ET.Element('INTERFACE', {
-                        'INTERFACE_NAME': interface,
-                        'FILE_CREATED_TIME': str(int(time.time() * 1000)),
-                        'FILE_NAME': xml_filename, 
-                        'NO_RECORD': str(len(df)) 
-                    })
-                    
-                    for index, row in df.iterrows():
-                        if 'UNIQUE_ID' not in df.columns or row['UNIQUE_ID'] is None:
-                            continue
-                            
-                        mapping = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': str(row['UNIQUE_ID'])})
-                        for col_name in df.columns:
-                            if col_name == 'UNIQUE_ID':
-                                continue
-                            child = ET.SubElement(mapping, col_name)
-                            val = row[col_name]
-                            if val is None:
-                                child.set(f"{{{NS}}}nil", "true")
-                            else:
-                                child.text = str(val)
-                                
-                    tree = ET.ElementTree(root)
                     try:
-                        ET.indent(tree, space="  ", level=0)
-                    except AttributeError:
-                        pass
-                    
-                    # Direct render payload to streaming buffer
-                    xml_buffer = io.BytesIO()
-                    tree.write(xml_buffer, encoding="UTF-8", xml_declaration=True)
-                    
-                    # CREATE ISOLATED ZIP ARCHIVE FOR THIS INDIVIDUAL FILE TYPE
-                    individual_zip_buffer = io.BytesIO()
-                    with zipfile.ZipFile(individual_zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
-                        zipf.writestr(xml_filename, xml_buffer.getvalue())
-                    
-                    # Store generated data into persistent download queue
-                    st.session_state.download_queue.append({
-                        "zip_name": zip_filename,
-                        "zip_data": individual_zip_buffer.getvalue(),
-                        "source_name": file_name,
-                        "records": len(df)
-                    })
-                    
-                    success_count += 1
-                    total_records_processed += len(df)
-                    
-                except Exception as e:
-                    st.error(f"❌ **Pipeline Failure** on `{file_name}`: {e}")
-            else:
-                st.warning(f"⏭️ **Ignored:** `{file_name}` does not match any known target rules.")
+                        # Trích xuất dữ liệu từ file Excel
+                        df = pd.read_excel(uploaded_file, dtype=str, engine='openpyxl')
+                        df = df.where(pd.notnull(df), None)
+                        
+                        # Khởi tạo cấu trúc XML Gốc
+                        NS = 'http://www.w3.org/2001/XMLSchema-instance'
+                        ET.register_namespace('xs', NS)
+                        
+                        root = ET.Element('INTERFACE', {
+                            'INTERFACE_NAME': interface,
+                            'FILE_CREATED_TIME': str(int(time.time() * 1000)),
+                            'FILE_NAME': xml_filename, 
+                            'NO_RECORD': str(len(df)) 
+                        })
+                        
+                        # --- BẮT ĐẦU VÒNG LẶP XỬ LÝ DÒNG DỮ LIỆU ---
+                        for index, row in df.iterrows():
+                            if 'UNIQUE_ID' not in df.columns or row['UNIQUE_ID'] is None:
+                                continue
+                            
+                            unique_id_val = str(row['UNIQUE_ID'])
+                            
+                            # RẼ NHÁNH LOGIC: Nếu là file Basic School
+                            if is_school:
+                                # Tạo thẻ bọc dòng dạng <STUDENT_BASIC_PERSONAL>
+                                row_element = ET.SubElement(root, 'STUDENT_BASIC_PERSONAL')
+                                
+                                # Tạo thẻ con đặc thù với attribute cố định UNIQUE_ID="Y"
+                                uid_child = ET.SubElement(row_element, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'})
+                                uid_child.text = unique_id_val
+                            else:
+                                # Cấu trúc mặc định cho các file Mapping và Personal thông thường
+                                row_element = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': unique_id_val})
+                                
+                            # Duyệt qua các cột còn lại để thêm vào thẻ dòng
+                            for col_name in df.columns:
+                                if col_name == 'UNIQUE_ID':
+                                    continue  # Đã xử lý ở trên nên bỏ qua cột này ở vòng lặp con
+                                    
+                                child = ET.SubElement(row_element, col_name)
+                                val = row[col_name]
+                                if val is None:
+                                    child.set(f"{{{NS}}}nil", "true")
+                                else:
+                                    child.text = str(val)
+                        # --- KẾT THÚC VÒNG LẶP XỬ LÝ DÒNG DỮ LIỆU ---
+                                    
+                        tree = ET.ElementTree(root)
         
         # Save structural metadata for rendering
         st.session_state.run_summary = {
