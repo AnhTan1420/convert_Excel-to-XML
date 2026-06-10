@@ -71,8 +71,8 @@ if uploaded_files:
                 zip_filename = f"{prefix}_{current_time}.zip"
                 
                 # Identify specific interface rules based on prefix
-                is_personal = (prefix == "FULL_SFS_BASIC_PERSONLA_MK")
-                is_school = (prefix == "FULL_SFF_BASIC_SCHOOL_MK")
+                is_personal = (prefix == "FULL_SFS_STUDENT_BASIC_PERSONAL_MK")
+                is_school = (prefix == "FULL_SFF_STUDENT_BASIC_SCHOOL_MK")
                 
                 try:
                     # Extract data elements
