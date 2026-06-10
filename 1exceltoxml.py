@@ -25,8 +25,8 @@ with st.expander("📘 System Guidelines & Target Interface Identifiers", expand
     | Target System Interface | Accepted File Keyword | Generated Payload Prefix | XML Row Structure |
     | :--- | :--- | :--- | :--- |
     | **ID Mapping Profile** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` | `<ID_Mapping UNIQUE_ID="...">` |
-    | **Basic Personal** | `Personal` | `FULL_SFS_BASIC_PERSONLA_MK_*` | `<STUDENT_BASIC_PERSONAL>` + Attribute` |
-    | **Basic School** | `School` | `FULL_SFF_BASIC_SCHOOL_MK_*` | `Pending |
+    | **Basic Personal** | `Personal` | `FULL_SFS_BASIC_PERSONLA_MK_*` | `<STUDENT_BASIC_PERSONAL>` + Attr |
+    | **Basic School** | `School` | `FULL_SFF_BASIC_SCHOOL_MK_*` | `<STUDENT_BASIC_SCHOOL>` + Attr |
     """)
 
 st.markdown("### 📤 Source File Upload")
@@ -41,7 +41,7 @@ MAPPING_RULES = {
     "MAPPING": {"prefix": "FULL_SFS_ID_MAPPING_MK", "interface": "STUDENT_ID_Mapping_INFO"},
     "PERSONAL": {"prefix": "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "interface": "STUDENT_Personal_INFO"},
     "PERSONLA": {"prefix": "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "interface": "STUDENT_Personal_INFO"}, # Legacy typo fallback
-    "SCHOOL": {"prefix": "FULL_SFS_STUDENT_BASIC_SCHOOL_MK", "interface": "STUDENT_School_INFO"}
+    "SCHOOL": {"prefix": "FULL_SFF_STUDENT_BASIC_SCHOOL_MK", "interface": "STUDENT_School_INFO"}
 }
 
 if uploaded_files:
@@ -70,9 +70,9 @@ if uploaded_files:
                 xml_filename = f"{prefix}_{current_time}.xml"
                 zip_filename = f"{prefix}_{current_time}.zip"
                 
-                # Check if the file is the specific School file type
-                is_personal = (prefix == "FULL_SFS_STUDENT_BASIC_PERSONAL_MK")
-                is_school = (prefix == "FULL_SFS_STUDENT_BASIC_SCHOOL_MK")
+                # Identify specific interface rules based on prefix
+                is_personal = (prefix == "FULL_SFS_BASIC_PERSONLA_MK")
+                is_school = (prefix == "FULL_SFF_BASIC_SCHOOL_MK")
                 
                 try:
                     # Extract data elements
@@ -97,17 +97,21 @@ if uploaded_files:
                         
                         unique_id_val = str(row['UNIQUE_ID'])
                         
-                        # Apply conditional branching for XML tags
+                        # Apply conditional branching for specialized XML tags
                         if is_personal:
-                            # Specialized tags for School data
+                            # Structure for Personal Info payload
                             row_element = ET.SubElement(root, 'STUDENT_BASIC_PERSONAL')
                             uid_child = ET.SubElement(row_element, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'})
                             uid_child.text = unique_id_val
+                        elif is_school:
+                            # Structure for School payload
+                            row_element = ET.SubElement(root, 'STUDENT_BASIC_SCHOOL')
+                            uid_child = ET.SubElement(row_element, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'})
+                            uid_child.text = unique_id_val
                         else:
-                            # Standard generic tags for Mapping and Personal data
+                            # Default standard structure for Mapping payload
                             row_element = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': unique_id_val})
-
-                  
+                            
                         # Build remaining column nodes
                         for col_name in df.columns:
                             if col_name == 'UNIQUE_ID':
@@ -149,7 +153,7 @@ if uploaded_files:
                 except Exception as e:
                     st.error(f"❌ **Pipeline Failure** on `{file_name}`: {e}")
             else:
-                st.warning(f"⏭:// **Ignored:** `{file_name}` does not match any known target system criteria.")
+                st.warning(f"⏭️ **Ignored:** `{file_name}` does not match any known target system criteria.")
         
         # Cache summary results for display rendering
         st.session_state.run_summary = {
@@ -160,14 +164,14 @@ if uploaded_files:
     # Persistent UI Rendering Section (Avoids interface destruction during file downloads)
     if st.session_state.download_queue:
         st.markdown("---")
-        st.markdown("### 📊 Execution Run Summary")
+        st.markdown("### Execution Run Summary")
         col1, col2 = st.columns(2)
         with col1:
             st.metric(label="Generated Payloads", value=f"{st.session_state.run_summary['success_count']} File(s)")
         with col2:
             st.metric(label="Total Dataset Records", value=f"{st.session_state.run_summary['total_records']} Rows")
         
-
+        
         st.write("The processing has generated zip files:")
         
         # Loop through the memory queue to build segmented container layouts
