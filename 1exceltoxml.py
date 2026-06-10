@@ -103,6 +103,13 @@ if uploaded_files:
                             row_element = ET.SubElement(root, 'STUDENT_BASIC_PERSONAL')
                             uid_child = ET.SubElement(row_element, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'})
                             uid_child.text = unique_id_val
+
+                        if is_school:
+                            # Specialized tags for School data
+                            row_element = ET.SubElement(root, 'STUDENT_BASIC_SCHOOL')
+                            uid_child = ET.SubElement(row_element, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'})
+                            uid_child.text = unique_id_val
+                            
                         else:
                             # Standard generic tags for Mapping and Personal data
                             row_element = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': unique_id_val})
