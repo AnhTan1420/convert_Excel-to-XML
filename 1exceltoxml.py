@@ -19,13 +19,12 @@ if "run_summary" not in st.session_state:
 # --- CHỨC NĂNG TẠO TEMPLATE EXCEL TRONG BỘ NHỚ ---
 def generate_template(headers):
     buffer = io.BytesIO()
-    # Tạo DataFrame trống chỉ có các cột tiêu đề
     df_template = pd.DataFrame(columns=headers)
     with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
         df_template.to_excel(writer, index=False)
     return buffer.getvalue()
 
-# Định nghĩa danh sách cột chính xác từ file mẫu của bạn
+# Định nghĩa danh sách cột chính xác từ các file XML cấu trúc hệ thống của bạn
 TEMPLATE_COLUMNS = {
     "MAPPING": [
         "UNIQUE_ID", "STUDENT_UIN_FIN_NO", "PARENT_UIN_FIN_NO", 
@@ -48,40 +47,57 @@ TEMPLATE_COLUMNS = {
         "PASS_ISSUE_DATE", "PASS_EXPIRY_DATE", "RACE_REQUEST_DATE", "PR_TYPE"
     ],
     "SCHOOL": [
-        "UNIQUE_ID", "SCHOOL_CODE", "SCHOOL_NAME", "ADMISSION_DATE", 
-        "STREAM_CODE", "CLASS_CODE", "STATUS_CODE"
-    ] # Thêm các cột School thực tế của dự án bạn vào đây nếu cần chỉnh sửa
+        "RECORD_ID", "UNIQUE_ID", "STUDENT_STATUS_ICODE", "SCHOOL_CODE", "ADMISSION_NO", 
+        "ACADEMIC_YEAR", "LEVEL_XCODE", "STREAM_XCODE", "CLASS_XCODE", "CLASS_SERIAL_NO", 
+        "COURSE_TYPE_CODE", "FIRSTLANGUAGE_L1_CODE", "SECONDLANGUAGE_L2_CODE", 
+        "LEAVE_OF_ABSENCE_IND", "REPEAT_STUD_IND", "ACAD_STATUS_ICODE", "EFFECTIVE_DATE", 
+        "SCHOOL_NAME", "CLASS_NAME", "LEVEL_NAME", "STREAM_NAME", "COURSE_XCODE", 
+        "COURSE_NAME", "COURSE_TYPE_NAME", "INTF_PROMOTION_IND", "RECOMMENDED_LEVEL_XCODE", 
+        "RECOMMENDED_STREAM_XCODE", "JC_PROVISIONAL_IND", "POSTED_IND", "MATRICULATION_NO", "IP_IND"
+    ],
+    "PARENT": [
+        "RECORD_ID", "UNIQUE_ID", "PARENT_UNIQUE_ID", "RELATION_ICODE", "PARENT_GUARDIAN_NAME", 
+        "CITIZENSHIP_CODE", "RACE_CODE", "STANDARD_ATTENDED_CODE", "DECEASED_YEAR", 
+        "TELEPHONE_NO", "HANDPHONE_NO", "OTHER_CONTACT_NO", "BIRTH_DATE", "EMAIL_ADDRESS", 
+        "CITIZENSHIP_EFFECTIVE_DATE", "CITIZENSHIP_SGDRM_CODE", "PR_TYPE", "NRIC_BLK_HSE_NO", 
+        "NRIC_STREET_CODE", "NRIC_FLOOR_NO", "NRIC_UNIT_NO", "NRIC_POSTAL_ECODE"
+    ]
 }
 
 # Hộp tiện ích tải File Mẫu (Templates)
 with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded=True):
-    st.markdown("Select the required template type below to download the Excel file with the standard column structure:")
-    col_t1, col_t2, col_t3 = st.columns(3)
+    st.markdown("Chọn loại template cần thiết bên dưới để tải về file Excel cấu trúc chuẩn:")
+    col_t1, col_t2, col_t3, col_t4 = st.columns(4)
     
     with col_t1:
-        mapping_data = generate_template(TEMPLATE_COLUMNS["MAPPING"])
         st.download_button(
-            label="📁 ID_MAPPING Template",
-            data=mapping_data,
+            label="📁 ID_MAPPING",
+            data=generate_template(TEMPLATE_COLUMNS["MAPPING"]),
             file_name="Template_ID_MAPPING.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
     with col_t2:
-        personal_data = generate_template(TEMPLATE_COLUMNS["PERSONAL"])
         st.download_button(
-            label="📁 BASIC_PERSONAL Template",
-            data=personal_data,
+            label="📁 BASIC_PERSONAL",
+            data=generate_template(TEMPLATE_COLUMNS["PERSONAL"]),
             file_name="Template_BASIC_PERSONAL.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
     with col_t3:
-        school_data = generate_template(TEMPLATE_COLUMNS["SCHOOL"])
         st.download_button(
-            label="📁 BASIC_SCHOOL Template",
-            data=school_data,
+            label="📁 BASIC_SCHOOL",
+            data=generate_template(TEMPLATE_COLUMNS["SCHOOL"]),
             file_name="Template_BASIC_SCHOOL.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+    with col_t4:
+        st.download_button(
+            label="📁 STUDENT_PARENT",
+            data=generate_template(TEMPLATE_COLUMNS["PARENT"]),
+            file_name="Template_STUDENT_PARENT.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
@@ -94,9 +110,10 @@ with st.expander("📘 System Guidelines & Target Interface Identifiers", expand
     
     | Target System Interface | Accepted File Keyword | Generated Payload Prefix | XML Row Structure |
     | :--- | :--- | :--- | :--- |
-    | **ID Mapping Profile** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` | `<ID_Mapping UNIQUE_ID="...">` |
-    | **Basic Personal** | `Personal` | `FULL_SFS_STUDENT_BASIC_PERSONAL_MK_*` | `<STUDENT_BASIC_PERSONAL>` + Attr |
-    | **Basic School** | `School` | `FULL_SFF_STUDENT_BASIC_SCHOOL_MK_*` | `<STUDENT_BASIC_SCHOOL>` + Attr |
+    | **ID Mapping** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` | `<ID_Mapping UNIQUE_ID="...">` |
+    | **Basic Personal** | `Personal` | `FULL_SFS_STUDENT_BASIC_PERSONAL_MK_*` | `<STUDENT_BASIC_PERSONAL>` |
+    | **Basic School** | `School` | `FULL_SFF_STUDENT_BASIC_SCHOOL_MK_*` | `<STUDENT_BASIC_SCHOOL>` |
+    | **Student Parent** | `Parent` | `FULL_SFS_STUDENT_PARENT_SEC_*` | `<STUDENT_PARENT>` |
     """)
 
 st.markdown("### 📤 Source File Upload")
@@ -110,15 +127,15 @@ uploaded_files = st.file_uploader(
 MAPPING_RULES = {
     "MAPPING": {"prefix": "FULL_SFS_ID_MAPPING_MK", "interface": "STUDENT_ID_Mapping_INFO"},
     "PERSONAL": {"prefix": "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "interface": "STUDENT_Personal_INFO"},
-    "PERSONLA": {"prefix": "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "interface": "STUDENT_Personal_INFO"}, # Legacy typo fallback
-    "SCHOOL": {"prefix": "FULL_SFF_STUDENT_BASIC_SCHOOL_MK", "interface": "STUDENT_School_INFO"}
+    "PERSONLA": {"prefix": "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "interface": "STUDENT_Personal_INFO"}, 
+    "SCHOOL": {"prefix": "FULL_SFF_STUDENT_BASIC_SCHOOL_MK", "interface": "STUDENT_BASIC_SCHOOL"},
+    "PARENT": {"prefix": "FULL_SFS_STUDENT_PARENT_MK", "interface": "Student_Parent"}
 }
 
 if uploaded_files:
     st.info(f"📋 **Stage Queue:** {len(uploaded_files)} file(s) loaded into session memory.")
     
     if st.button("🚀 Execute Split Transformation", type="primary", use_container_width=True):
-        # Reset local cache queue for the new execution run
         st.session_state.download_queue = []
         success_count = 0
         total_records_processed = 0
@@ -128,37 +145,39 @@ if uploaded_files:
             file_name = uploaded_file.name
             matched_rule = None
             
-            # Match token against criteria matrix
             for key, rule in MAPPING_RULES.items():
                 if key.upper() in file_name.upper():
                     matched_rule = rule
                     break
             
             if matched_rule:
-                prefix = matched_rule["prefix"]
+                base_prefix = matched_rule["prefix"]
                 interface = matched_rule["interface"]
+                
+                # Hỗ trợ giữ nguyên tiền tố DELTA_ hoặc FULL_ linh hoạt từ file gốc tải lên
+                if file_name.upper().startswith("DELTA_"):
+                    prefix = base_prefix.replace("FULL_", "DELTA_")
+                else:
+                    prefix = base_prefix
+                    
                 xml_filename = f"{prefix}_{current_time}.xml"
                 zip_filename = f"{prefix}_{current_time}.zip"
                 
-                # Identify specific interface rules based on prefix
-                is_personal = (prefix == "FULL_SFS_STUDENT_BASIC_PERSONAL_MK")
-                is_school = (prefix == "FULL_SFF_STUDENT_BASIC_SCHOOL_MK")
+                is_personal = (base_prefix == "FULL_SFS_STUDENT_BASIC_PERSONAL_MK")
+                is_school = (base_prefix == "FULL_SFF_STUDENT_BASIC_SCHOOL_MK")
+                is_parent = (base_prefix == "FULL_SFS_STUDENT_PARENT_MK")
                 
                 try:
-                    # Đọc file Excel vào DataFrame
                     df = pd.read_excel(uploaded_file, engine='openpyxl')
                     
-                    # Xử lý các ô trống (NaN) thành chuỗi rỗng "" trước, rồi mới ép kiểu string
                     df = df.fillna("")
                     df = df.astype(str)
                     
-                    # Loại bỏ luôn dấu chấm ".0" phát sinh ở các cột số do Pandas tự dịch sang kiểu float
                     for col in df.columns:
                         df[col] = df[col].apply(
                             lambda x: x.split(".")[0] if x.endswith(".0") else x
                         )
                     
-                    # Initialize XML Element Tree Structure
                     NS = 'http://www.w3.org/2001/XMLSchema-instance'
                     ET.register_namespace('xs', NS)
                     
@@ -169,34 +188,42 @@ if uploaded_files:
                         'NO_RECORD': str(len(df)) 
                     })
                     
-                    # Process rows dynamically based on the file type rule
                     for index, row in df.iterrows():
-                        if 'UNIQUE_ID' not in df.columns or row['UNIQUE_ID'] == "":
+                        # Tìm cột ID chính (chấp nhận UNIQUE_ID hoặc STUDENT_UNIQUE_ID từ excel)
+                        id_col = 'UNIQUE_ID' if 'UNIQUE_ID' in df.columns else ('STUDENT_UNIQUE_ID' if 'STUDENT_UNIQUE_ID' in df.columns else None)
+                        
+                        if id_col is None or row[id_col] == "":
                             continue
                         
-                        unique_id_val = str(row['UNIQUE_ID'])
+                        unique_id_val = str(row[id_col])
                         
-                        # Apply conditional branching for specialized XML tags
+                        # Khởi tạo Block Thẻ cha dựa trên Interface phân hệ
                         if is_personal:
                             row_element = ET.SubElement(root, 'STUDENT_BASIC_PERSONAL')
-                            uid_child = ET.SubElement(row_element, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'})
-                            uid_child.text = unique_id_val
                         elif is_school:
                             row_element = ET.SubElement(root, 'STUDENT_BASIC_SCHOOL')
-                            uid_child = ET.SubElement(row_element, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'})
-                            uid_child.text = unique_id_val
+                        elif is_parent:
+                            row_element = ET.SubElement(root, 'STUDENT_PARENT')
                         else:
                             row_element = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': unique_id_val})
                             
-                        # Build remaining column nodes
+                        # Quét tất cả các cột theo đúng thứ tự sắp xếp trong Excel mẫu
                         for col_name in df.columns:
-                            if col_name == 'UNIQUE_ID':
+                            if not (is_personal or is_school or is_parent) and col_name == 'UNIQUE_ID':
                                 continue
                                 
-                            child = ET.SubElement(row_element, col_name)
+                            xml_tag = col_name
+                            # Đồng bộ cột UNIQUE_ID của Excel thành STUDENT_UNIQUE_ID trong XML phân hệ
+                            if col_name == 'UNIQUE_ID' and (is_personal or is_school or is_parent):
+                                xml_tag = 'STUDENT_UNIQUE_ID'
+                                
+                            child = ET.SubElement(row_element, xml_tag)
                             val = row[col_name]
                             
-                            # Kiểm tra nếu giá trị là chuỗi rỗng thì gán thuộc tính nil="true"
+                            # Đính kèm attribute UNIQUE_ID="Y" cho các thẻ khóa định danh hệ thống
+                            if xml_tag in ['STUDENT_UNIQUE_ID', 'PARENT_UNIQUE_ID']:
+                                child.set('UNIQUE_ID', 'Y')
+                                
                             if val == "":
                                 child.set(f"{{{NS}}}nil", "true")
                             else:
@@ -208,16 +235,13 @@ if uploaded_files:
                     except AttributeError:
                         pass
                     
-                    # Direct render payload to streaming buffer
                     xml_buffer = io.BytesIO()
                     tree.write(xml_buffer, encoding="UTF-8", xml_declaration=True)
                     
-                    # Create an isolated zip archive package for this specific target prefix
                     individual_zip_buffer = io.BytesIO()
                     with zipfile.ZipFile(individual_zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
                         zipf.writestr(xml_filename, xml_buffer.getvalue())
                     
-                    # Store generated zip metadata into session state queue
                     st.session_state.download_queue.append({
                         "zip_name": zip_filename,
                         "zip_data": individual_zip_buffer.getvalue(),
@@ -233,7 +257,6 @@ if uploaded_files:
             else:
                 st.warning(f"⏭️ **Ignored:** `{file_name}` does not match any known target system criteria.")
         
-        # Cache summary results for display rendering
         st.session_state.run_summary = {
             "success_count": success_count,
             "total_records": total_records_processed
