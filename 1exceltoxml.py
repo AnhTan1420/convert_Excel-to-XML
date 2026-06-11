@@ -66,7 +66,7 @@ TEMPLATE_COLUMNS = {
 
 # Hộp tiện ích tải File Mẫu (Templates)
 with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded=True):
-    st.markdown("Chọn loại template cần thiết bên dưới để tải về file Excel cấu trúc chuẩn:")
+    st.markdown("Select the necessary template type below to download the standard Excel file structure:")
     col_t1, col_t2, col_t3, col_t4 = st.columns(4)
     
     with col_t1:
