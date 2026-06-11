@@ -113,7 +113,7 @@ with st.expander("📘 System Guidelines & Target Interface Identifiers", expand
     | **ID Mapping** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` | `<ID_Mapping UNIQUE_ID="...">` |
     | **Basic Personal** | `Personal` | `FULL_SFS_STUDENT_BASIC_PERSONAL_MK_*` | `<STUDENT_BASIC_PERSONAL>` |
     | **Basic School** | `School` | `FULL_SFF_STUDENT_BASIC_SCHOOL_MK_*` | `<STUDENT_BASIC_SCHOOL>` |
-    | **Student Parent** | `Parent` | `FULL_SFS_STUDENT_PARENT_SEC_*` | `<STUDENT_PARENT>` |
+    | **Student Parent** | `Parent` | `FULL_SFS_STUDENT_PARENT_MK_*` | `<STUDENT_PARENT>` |
     """)
 
 st.markdown("### 📤 Source File Upload")
