@@ -95,7 +95,7 @@ with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded
         )
     with col_t4:
         st.download_button(
-            label="📁 STUDENT_PARENT",
+            label="📁 PARENT",
             data=generate_template(TEMPLATE_COLUMNS["PARENT"]),
             file_name="Template_STUDENT_PARENT.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
