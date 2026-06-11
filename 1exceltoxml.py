@@ -16,6 +16,76 @@ if "download_queue" not in st.session_state:
 if "run_summary" not in st.session_state:
     st.session_state.run_summary = {"success_count": 0, "total_records": 0}
 
+# --- CHỨC NĂNG TẠO TEMPLATE EXCEL TRONG BỘ NHỚ ---
+def generate_template(headers):
+    buffer = io.BytesIO()
+    # Tạo DataFrame trống chỉ có các cột tiêu đề
+    df_template = pd.DataFrame(columns=headers)
+    with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+        df_template.to_excel(writer, index=False)
+    return buffer.getvalue()
+
+# Định nghĩa danh sách cột chính xác từ file mẫu của bạn
+TEMPLATE_COLUMNS = {
+    "MAPPING": [
+        "UNIQUE_ID", "STUDENT_UIN_FIN_NO", "PARENT_UIN_FIN_NO", 
+        "STUDENT_UINFIN_TYPE_ICODE", "PREV_NRIC_UIN_FIN_NO"
+    ],
+    "PERSONAL": [
+        "RECORD_ID", "UNIQUE_ID", "STUDENT_NAME", "HANYU_PINYIN_NAME", "BIRTH_DATE", 
+        "CITIZENSHIP_CODE", "CITIZENSHIP_SGDRM_CODE", "RACE_CODE", "RELIGION_CODE", 
+        "RELIGION_SGDRM_CODE", "SEX_CODE", "EMAIL_ADDRESS", "CITIZENSHIP_EFFECTIVE_DATE", 
+        "CONTACT_SAMEAS_OFFICIAL_IND", "CONTACTADD_BLK_HSE_NO", "CONTACTADD_STREET_NAME", 
+        "CONTACTADD_FLOOR_NO", "CONTACTADD_UNIT_NO", "CONTACTADD_BLDG_NAME", 
+        "CONTACTADD_POSTAL_ECODE", "TELEPHONE_NO", "HANDPHONE_NO", "OTHER_CONTACT_NO", 
+        "RES_TYPE_CODE", "OFFICIALADD_BLK_HSE_NO", "OFFICIALADD_STREET_NAME", 
+        "OFFICIALADD_FLOOR_NO", "OFFICIALADD_UNIT_NO", "OFFICIALADD_BLDG_NAME", 
+        "OFFICIALADD_POSTAL_ECODE", "FOREIGNADD_LINE1_DESC", "FOREIGNADD_LINE2_DESC", 
+        "FOREIGNADD_POSTAL_ECODE", "FOREIGNADD_COUNTRY_CODE", "FOREIGNADD_CONTACTCODE_NO_OLD", 
+        "FOREIGNADD_CONTACT_NO_OLD", "FOREIGNADD_CONTACTCODE_NO", "FOREIGNADD_CONTACT_NO", 
+        "FOREIGNADD_COUNTRY_SGDRM_CODE", "ADDRESS_IND", "CONTACTADD_STREET_CODE", 
+        "OFFICIALADD_STREET_CODE", "GUARDIAN_TYPE_ICODE", "PASS_TYPE_CODE", 
+        "PASS_ISSUE_DATE", "PASS_EXPIRY_DATE", "RACE_REQUEST_DATE", "PR_TYPE"
+    ],
+    "SCHOOL": [
+        "UNIQUE_ID", "SCHOOL_CODE", "SCHOOL_NAME", "ADMISSION_DATE", 
+        "STREAM_CODE", "CLASS_CODE", "STATUS_CODE"
+    ] # Thêm các cột School thực tế của dự án bạn vào đây nếu cần chỉnh sửa
+}
+
+# Hộp tiện ích tải File Mẫu (Templates)
+with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded=True):
+    st.markdown("Chọn loại template cần thiết bên dưới để tải về file Excel có sẵn cấu trúc cột chuẩn:")
+    col_t1, col_t2, col_t3 = st.columns(3)
+    
+    with col_t1:
+        mapping_data = generate_template(TEMPLATE_COLUMNS["MAPPING"])
+        st.download_button(
+            label="📁 ID_MAPPING Template",
+            data=mapping_data,
+            file_name="Template_ID_MAPPING.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+    with col_t2:
+        personal_data = generate_template(TEMPLATE_COLUMNS["PERSONAL"])
+        st.download_button(
+            label="📁 BASIC_PERSONAL Template",
+            data=personal_data,
+            file_name="Template_BASIC_PERSONAL.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+    with col_t3:
+        school_data = generate_template(TEMPLATE_COLUMNS["SCHOOL"])
+        st.download_button(
+            label="📁 BASIC_SCHOOL Template",
+            data=school_data,
+            file_name="Template_BASIC_SCHOOL.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+
 # Collapsible Documentation Matrix
 with st.expander("📘 System Guidelines & Target Interface Identifiers", expanded=False):
     st.markdown("""
@@ -75,14 +145,14 @@ if uploaded_files:
                 is_school = (prefix == "FULL_SFF_STUDENT_BASIC_SCHOOL_MK")
                 
                 try:
-                    # Đọc file Excel vào DataFrame (giữ engine openpyxl để chạy ổn định trên cloud)
+                    # Đọc file Excel vào DataFrame
                     df = pd.read_excel(uploaded_file, engine='openpyxl')
                     
-                    # THAY THẾ: Xử lý các ô trống (NaN) thành chuỗi rỗng "" trước, rồi mới ép kiểu string
+                    # Xử lý các ô trống (NaN) thành chuỗi rỗng "" trước, rồi mới ép kiểu string
                     df = df.fillna("")
                     df = df.astype(str)
                     
-                    # Mẹo nhỏ: Loại bỏ luôn dấu chấm ".0" phát sinh ở các cột số do Pandas tự dịch sang kiểu float
+                    # Loại bỏ luôn dấu chấm ".0" phát sinh ở các cột số do Pandas tự dịch sang kiểu float
                     for col in df.columns:
                         df[col] = df[col].apply(
                             lambda x: x.split(".")[0] if x.endswith(".0") else x
@@ -101,7 +171,6 @@ if uploaded_files:
                     
                     # Process rows dynamically based on the file type rule
                     for index, row in df.iterrows():
-                        # Kiểm tra chuỗi rỗng thay vì None do đã qua bước fillna("")
                         if 'UNIQUE_ID' not in df.columns or row['UNIQUE_ID'] == "":
                             continue
                         
@@ -109,17 +178,14 @@ if uploaded_files:
                         
                         # Apply conditional branching for specialized XML tags
                         if is_personal:
-                            # Structure for Personal Info payload
                             row_element = ET.SubElement(root, 'STUDENT_BASIC_PERSONAL')
                             uid_child = ET.SubElement(row_element, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'})
                             uid_child.text = unique_id_val
                         elif is_school:
-                            # Structure for School payload
                             row_element = ET.SubElement(root, 'STUDENT_BASIC_SCHOOL')
                             uid_child = ET.SubElement(row_element, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'})
                             uid_child.text = unique_id_val
                         else:
-                            # Default standard structure for Mapping payload
                             row_element = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': unique_id_val})
                             
                         # Build remaining column nodes
@@ -173,7 +239,7 @@ if uploaded_files:
             "total_records": total_records_processed
         }
 
-    # Persistent UI Rendering Section (Avoids interface destruction during file downloads)
+    # Persistent UI Rendering Section
     if st.session_state.download_queue:
         st.markdown("---")
         st.markdown("### Execution Run Summary")
@@ -185,7 +251,6 @@ if uploaded_files:
         
         st.write("The processing has generated zip files:")
         
-        # Loop through the memory queue to build segmented container layouts
         for item in st.session_state.download_queue:
             with st.container(border=True):
                 st.markdown(f"🔹 **Source Workbook:** `{item['source_name']}` | **Payload Size:** {item['records']} elements")
@@ -194,6 +259,6 @@ if uploaded_files:
                     data=item['zip_data'],
                     file_name=item['zip_name'],
                     mime="application/zip",
-                    key=f"btn_{item['zip_name']}", # Prevent unique widget ID collision errors
+                    key=f"btn_{item['zip_name']}", 
                     use_container_width=True
                 )
