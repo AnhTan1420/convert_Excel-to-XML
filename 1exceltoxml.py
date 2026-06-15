@@ -8,7 +8,7 @@ import zipfile
 # App Workspace Configuration
 st.set_page_config(page_title="MOE Jordan", page_icon="⚙️", layout="centered")
 
-st.title("MOE convert XLSX to XML then compress to ZIP")
+st.title("MOE: Convert XLSX to XML and compress to ZIP")
 
 # Initialize Session States to prevent download button data-loss on click
 if "download_queue" not in st.session_state:
