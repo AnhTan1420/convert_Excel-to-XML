@@ -16,7 +16,7 @@ if "download_queue" not in st.session_state:
 if "run_summary" not in st.session_state:
     st.session_state.run_summary = {"success_count": 0, "total_records": 0}
 
-# --- CHỨC NĂNG TẠO TEMPLATE EXCEL TRONG BỘ NHỚ ---
+# Create excel template in memory ram
 def generate_template(headers):
     buffer = io.BytesIO()
     df_template = pd.DataFrame(columns=headers)
@@ -24,7 +24,7 @@ def generate_template(headers):
         df_template.to_excel(writer, index=False)
     return buffer.getvalue()
 
-# Định nghĩa danh sách cột chính xác từ các file XML cấu trúc hệ thống của bạn
+# Structure XML files
 TEMPLATE_COLUMNS = {
     "MAPPING": [
         "UNIQUE_ID", "STUDENT_UIN_FIN_NO", "PARENT_UIN_FIN_NO", 
@@ -61,13 +61,20 @@ TEMPLATE_COLUMNS = {
         "TELEPHONE_NO", "HANDPHONE_NO", "OTHER_CONTACT_NO", "BIRTH_DATE", "EMAIL_ADDRESS", 
         "CITIZENSHIP_EFFECTIVE_DATE", "CITIZENSHIP_SGDRM_CODE", "PR_TYPE", "NRIC_BLK_HSE_NO", 
         "NRIC_STREET_CODE", "NRIC_FLOOR_NO", "NRIC_UNIT_NO", "NRIC_POSTAL_ECODE"
+    ],
+    "MOVEMENT": [
+        "RECORD_ID", "UNIQUE_ID", "PARENT_UNIQUE_ID", "RELATION_ICODE", "PARENT_GUARDIAN_NAME", 
+        "CITIZENSHIP_CODE", "RACE_CODE", "STANDARD_ATTENDED_CODE", "DECEASED_YEAR", 
+        "TELEPHONE_NO", "HANDPHONE_NO", "OTHER_CONTACT_NO", "BIRTH_DATE", "EMAIL_ADDRESS", 
+        "CITIZENSHIP_EFFECTIVE_DATE", "CITIZENSHIP_SGDRM_CODE", "PR_TYPE", "NRIC_BLK_HSE_NO", 
+        "NRIC_STREET_CODE", "NRIC_FLOOR_NO", "NRIC_UNIT_NO", "NRIC_POSTAL_ECODE"
     ]
 }
 
-# Hộp tiện ích tải File Mẫu (Templates)
+# Sample file download box (Templates)
 with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded=True):
     st.markdown("Select the necessary template type below to download the standard Excel file structure:")
-    col_t1, col_t2, col_t3, col_t4 = st.columns(4)
+    col_t1, col_t2, col_t3, col_t4, col_t5 = st.columns(5)
     
     with col_t1:
         st.download_button(
@@ -101,6 +108,14 @@ with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
+    with col_t5:
+        st.download_button(
+            label="📁 MOVEMENT",
+            data=generate_template(TEMPLATE_COLUMNS["MOVEMENT"]),
+            file_name="Template_MOVEMENT.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
 
 # Collapsible Documentation Matrix
 with st.expander("📘 System Guidelines & Target Interface Identifiers", expanded=False):
@@ -127,9 +142,9 @@ uploaded_files = st.file_uploader(
 MAPPING_RULES = {
     "MAPPING": {"prefix": "FULL_SFS_ID_MAPPING_MK", "interface": "STUDENT_ID_Mapping_INFO"},
     "PERSONAL": {"prefix": "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "interface": "STUDENT_Personal_INFO"},
-    "PERSONLA": {"prefix": "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "interface": "STUDENT_Personal_INFO"}, 
     "SCHOOL": {"prefix": "FULL_SFF_STUDENT_BASIC_SCHOOL_MK", "interface": "STUDENT_BASIC_SCHOOL"},
-    "PARENT": {"prefix": "FULL_SFS_STUDENT_PARENT_MK", "interface": "Student_Parent"}
+    "PARENT": {"prefix": "FULL_SFS_STUDENT_PARENT_MK", "interface": "Student_Parent"},
+    "MOVEMENT": {"prefix": "FULL_SFS_MOVEMENT_MK", "interface": "MOVEMENT"}
 }
 
 if uploaded_files:
@@ -166,6 +181,7 @@ if uploaded_files:
                 is_personal = (base_prefix == "FULL_SFS_STUDENT_BASIC_PERSONAL_MK")
                 is_school = (base_prefix == "FULL_SFF_STUDENT_BASIC_SCHOOL_MK")
                 is_parent = (base_prefix == "FULL_SFS_STUDENT_PARENT_MK")
+                is_movement = (base_prefix == "FULL_SFS_MOVEMENT_MK")
                 
                 try:
                     df = pd.read_excel(uploaded_file, engine='openpyxl')
@@ -204,17 +220,19 @@ if uploaded_files:
                             row_element = ET.SubElement(root, 'STUDENT_BASIC_SCHOOL')
                         elif is_parent:
                             row_element = ET.SubElement(root, 'STUDENT_PARENT')
+                        elif is_movement:
+                            row_element = ET.SubElement(root, 'MOVEMENT')
                         else:
                             row_element = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': unique_id_val})
                             
                         # Quét tất cả các cột theo đúng thứ tự sắp xếp trong Excel mẫu
                         for col_name in df.columns:
-                            if not (is_personal or is_school or is_parent) and col_name == 'UNIQUE_ID':
+                            if not (is_personal or is_school or is_parent or is_movement) and col_name == 'UNIQUE_ID':
                                 continue
                                 
                             xml_tag = col_name
                             # Đồng bộ cột UNIQUE_ID của Excel thành STUDENT_UNIQUE_ID trong XML phân hệ
-                            if col_name == 'UNIQUE_ID' and (is_personal or is_school or is_parent):
+                            if col_name == 'UNIQUE_ID' and (is_personal or is_school or is_parent or is_movement):
                                 xml_tag = 'STUDENT_UNIQUE_ID'
                                 
                             child = ET.SubElement(row_element, xml_tag)
