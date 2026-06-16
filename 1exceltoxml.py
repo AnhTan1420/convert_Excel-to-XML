@@ -72,7 +72,7 @@ TEMPLATE_COLUMNS = {
 }
 
 # Sample file download box (Templates)
-with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded=False):
+with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded=True):
     st.markdown("Select the necessary template type below to download the standard Excel file structure:")
     col_t1, col_t2, col_t3, col_t4, col_t5 = st.columns(5)
     
@@ -118,7 +118,7 @@ with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded
         )
 
 # Collapsible Documentation Matrix
-with st.expander("📘 System Guidelines & Target Interface Identifiers", expanded=True):
+with st.expander("📘 System Guidelines & Target Interface Identifiers", expanded=False):
     st.markdown("""
     The processing engine matches files based on case-insensitive keyword tokens within the filename. 
     Each valid file type will generate its own dedicated, isolated ZIP archive.
