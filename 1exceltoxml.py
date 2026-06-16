@@ -72,7 +72,7 @@ TEMPLATE_COLUMNS = {
 }
 
 # Sample file download box (Templates)
-with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded=True):
+with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded=False):
     st.markdown("Select the necessary template type below to download the standard Excel file structure:")
     col_t1, col_t2, col_t3, col_t4, col_t5 = st.columns(5)
     
