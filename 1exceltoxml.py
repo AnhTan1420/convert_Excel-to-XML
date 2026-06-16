@@ -72,8 +72,8 @@ TEMPLATE_COLUMNS = {
 }
 
 # Sample file download box (Templates)
-with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded=True):
-    st.markdown("Select the necessary template type below to download the standard Excel file structure:")
+with st.expander("📥 Download Excel Sample Templates", expanded=True):
+    st.markdown("Select the School Cockpit MK template type below to download the standard Excel file structure:")
     col_t1, col_t2, col_t3, col_t4, col_t5 = st.columns(5)
     
     with col_t1:
@@ -86,7 +86,7 @@ with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded
         )
     with col_t2:
         st.download_button(
-            label="📁 BASIC_PERSONAL",
+            label="📁 PERSONAL",
             data=generate_template(TEMPLATE_COLUMNS["PERSONAL"]),
             file_name="Template_BASIC_PERSONAL.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -94,7 +94,7 @@ with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded
         )
     with col_t3:
         st.download_button(
-            label="📁 BASIC_SCHOOL",
+            label="📁 SCHOOL",
             data=generate_template(TEMPLATE_COLUMNS["SCHOOL"]),
             file_name="Template_BASIC_SCHOOL.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
