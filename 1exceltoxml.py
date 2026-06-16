@@ -170,7 +170,7 @@ if uploaded_files:
                 base_prefix = matched_rule["prefix"]
                 interface = matched_rule["interface"]
                 
-                # Hỗ trợ giữ nguyên tiền tố DELTA_ hoặc FULL_ linh hoạt từ file gốc tải lên
+                # Supports keeping the DELTA_ or FULL_ prefix flexibly from the original uploaded file
                 if file_name.upper().startswith("DELTA_"):
                     prefix = base_prefix.replace("FULL_", "DELTA_")
                 else:
@@ -206,7 +206,7 @@ if uploaded_files:
                     })
                     
                     for index, row in df.iterrows():
-                        # Tìm cột ID chính (chấp nhận UNIQUE_ID hoặc STUDENT_UNIQUE_ID từ excel)
+                        # Find primary ID column (accepts UNIQUE_ID or STUDENT_UNIQUE_ID from excel)
                         id_col = 'UNIQUE_ID' if 'UNIQUE_ID' in df.columns else ('STUDENT_UNIQUE_ID' if 'STUDENT_UNIQUE_ID' in df.columns else None)
                         
                         if id_col is None or row[id_col] == "":
@@ -214,7 +214,7 @@ if uploaded_files:
                         
                         unique_id_val = str(row[id_col])
                         
-                        # Khởi tạo Block Thẻ cha dựa trên Interface phân hệ
+                        # Initialize the parent Tag Block based on the Interface subsystem
                         if is_personal:
                             row_element = ET.SubElement(root, 'STUDENT_BASIC_PERSONAL')
                         elif is_school:
@@ -226,7 +226,7 @@ if uploaded_files:
                         else:
                             row_element = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': unique_id_val})
                             
-                        # Quét tất cả các cột theo đúng thứ tự sắp xếp trong Excel mẫu
+                        # Scan all columns in correct sort order in sample Excel
                         for col_name in df.columns:
                             if not (is_personal or is_school or is_parent or is_movement) and col_name == 'UNIQUE_ID':
                                 continue
