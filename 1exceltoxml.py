@@ -118,7 +118,7 @@ with st.expander("📥 Download Excel Sample Templates for QA Testing", expanded
         )
 
 # Collapsible Documentation Matrix
-with st.expander("📘 System Guidelines & Target Interface Identifiers", expanded=False):
+with st.expander("📘 System Guidelines & Target Interface Identifiers", expanded=True):
     st.markdown("""
     The processing engine matches files based on case-insensitive keyword tokens within the filename. 
     Each valid file type will generate its own dedicated, isolated ZIP archive.
