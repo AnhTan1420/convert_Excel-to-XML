@@ -170,7 +170,6 @@ if uploaded_files:
                 base_prefix = matched_rule["prefix"]
                 interface = matched_rule["interface"]
                 
-                # Supports keeping the DELTA_ or FULL_ prefix flexibly from the original uploaded file
                 if file_name.upper().startswith("DELTA_"):
                     prefix = base_prefix.replace("FULL_", "DELTA_")
                 else:
@@ -206,13 +205,10 @@ if uploaded_files:
                     })
                     
                     for index, row in df.iterrows():
-                        # Find primary ID column (accepts UNIQUE_ID or STUDENT_UNIQUE_ID from excel)
                         id_col = 'UNIQUE_ID' if 'UNIQUE_ID' in df.columns else ('STUDENT_UNIQUE_ID' if 'STUDENT_UNIQUE_ID' in df.columns else None)
                         
-                        if id_col is None or row[id_col] == "":
-                            continue
-                        
-                        unique_id_val = str(row[id_col])
+                        # Thay vì bỏ qua toàn bộ dòng, ta giữ giá trị rỗng nếu ID không tồn tại hoặc null
+                        unique_id_val = str(row[id_col]) if id_col and row[id_col] != "" else ""
                         
                         # Initialize the parent Tag Block based on the Interface subsystem
                         if is_personal:
@@ -224,10 +220,12 @@ if uploaded_files:
                         elif is_movement:
                             row_element = ET.SubElement(root, 'MOVEMENT')
                         else:
+                            # Đối với file MAPPING, đưa UNIQUE_ID thành attribute của thẻ ID_Mapping
                             row_element = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': unique_id_val})
                             
                         # Scan all columns in correct sort order in sample Excel
                         for col_name in df.columns:
+                            # Nếu là file MAPPING thì bỏ qua không tạo child node UNIQUE_ID (vì đã tạo attribute phía trên)
                             if not (is_personal or is_school or is_parent or is_movement) and col_name == 'UNIQUE_ID':
                                 continue
                                 
@@ -243,6 +241,7 @@ if uploaded_files:
                             if xml_tag in ['STUDENT_UNIQUE_ID', 'PARENT_UNIQUE_ID']:
                                 child.set('UNIQUE_ID', 'Y')
                                 
+                            # Nếu giá trị rỗng (bao gồm cả trường hợp UNIQUE_ID rỗng ở các phân hệ), set nil=true
                             if val == "":
                                 child.set(f"{{{NS}}}nil", "true")
                             else:
@@ -297,7 +296,7 @@ if uploaded_files:
             with st.container(border=True):
                 st.markdown(f"🔹 **Source Workbook:** `{item['source_name']}` | **Payload Size:** {item['records']} elements")
                 st.download_button(
-                    label=f"📦 Download {item['zip_name']}",
+                    label="📦 Download " + item['zip_name'],
                     data=item['zip_data'],
                     file_name=item['zip_name'],
                     mime="application/zip",
