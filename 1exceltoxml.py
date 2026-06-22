@@ -68,13 +68,17 @@ TEMPLATE_COLUMNS = {
         "TELEPHONE_NO", "HANDPHONE_NO", "OTHER_CONTACT_NO", "BIRTH_DATE", "EMAIL_ADDRESS", 
         "CITIZENSHIP_EFFECTIVE_DATE", "CITIZENSHIP_SGDRM_CODE", "PR_TYPE", "NRIC_BLK_HSE_NO", 
         "NRIC_STREET_CODE", "NRIC_FLOOR_NO", "NRIC_UNIT_NO", "NRIC_POSTAL_ECODE"
+    ],
+     "CUSTODIAL": [
+        "RECORD_ID", "UNIQUE_ID", "PARENT_UNIQUE_ID", "RELATION_ICODE", "CUSTODIAL_INFO",
+        "RELATIONSHIP", "PG_ACCESS_IND", "LAST_UPDATED_DATE"
     ]
 }
 
 # Sample file download box (Templates)
 with st.expander("📥 Download Excel Sample Templates", expanded=True):
     st.markdown("Select the School Cockpit MK template type below to download the standard Excel file structure:")
-    col_t1, col_t2, col_t3, col_t4, col_t5 = st.columns(5)
+    col_t1, col_t2, col_t3, col_t4, col_t5, col_t6 = st.columns(6)
     
     with col_t1:
         st.download_button(
@@ -116,6 +120,14 @@ with st.expander("📥 Download Excel Sample Templates", expanded=True):
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
+      with col_t5:
+        st.download_button(
+            label="📁 STUDENT_CUSTODIAL",
+            data=generate_template(TEMPLATE_COLUMNS["CUSTODIAL"]),
+            file_name="Template_STUDENT_CUSTODIAL.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
 
 # Collapsible Documentation Matrix
 with st.expander("📘 System Guidelines & Target Interface Identifiers", expanded=False):
@@ -129,6 +141,7 @@ with st.expander("📘 System Guidelines & Target Interface Identifiers", expand
     | **Basic Personal** | `Personal` | `FULL_SFS_STUDENT_BASIC_PERSONAL_MK_*` | `<STUDENT_BASIC_PERSONAL>` |
     | **Basic School** | `School` | `FULL_SFF_STUDENT_BASIC_SCHOOL_MK_*` | `<STUDENT_BASIC_SCHOOL>` |
     | **Student Parent** | `Parent` | `FULL_SFS_STUDENT_PARENT_MK_*` | `<STUDENT_PARENT>` |
+    | **Student Custodial** | `Custodial` | `FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_*` | `<STUDENT_PARENT>` |
     | **Movement** | `Movement` | `FULL_SFS_MOVEMENT_MK_*` | `<MOVEMENT>` |
     """)
 
@@ -145,7 +158,8 @@ MAPPING_RULES = {
     "PERSONAL": {"prefix": "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "interface": "STUDENT_Personal_INFO"},
     "SCHOOL": {"prefix": "FULL_SFF_STUDENT_BASIC_SCHOOL_MK", "interface": "STUDENT_BASIC_SCHOOL"},
     "PARENT": {"prefix": "FULL_SFS_STUDENT_PARENT_MK", "interface": "Student_Parent"},
-    "MOVEMENT": {"prefix": "FULL_SFS_MOVEMENT_MK", "interface": "MOVEMENT"}
+    "MOVEMENT": {"prefix": "FULL_SFS_MOVEMENT_MK", "interface": "MOVEMENT"}.
+    "CUSTODIAL": {"prefix": "FULL_SFS_STUDENT_CUSTODIAL_INFO_MK", "interface": "CUSTODIAL"}
 }
 
 if uploaded_files:
@@ -182,6 +196,7 @@ if uploaded_files:
                 is_school = (base_prefix == "FULL_SFF_STUDENT_BASIC_SCHOOL_MK")
                 is_parent = (base_prefix == "FULL_SFS_STUDENT_PARENT_MK")
                 is_movement = (base_prefix == "FULL_SFS_MOVEMENT_MK")
+                is_custodial = (base_prefix == "FULL_SFS_STUDENT_CUSTODIAL_INFO_MK")
                 
                 try:
                     df = pd.read_excel(uploaded_file, engine='openpyxl')
@@ -219,6 +234,8 @@ if uploaded_files:
                             row_element = ET.SubElement(root, 'STUDENT_PARENT')
                         elif is_movement:
                             row_element = ET.SubElement(root, 'MOVEMENT')
+                        elif is_custodial:
+                            row_element = ET.SubElement(root, 'CUSTODIAL')
                         else:
                             # Đối với file MAPPING, đưa UNIQUE_ID thành attribute của thẻ ID_Mapping
                             row_element = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': unique_id_val})
@@ -226,12 +243,12 @@ if uploaded_files:
                         # Scan all columns in correct sort order in sample Excel
                         for col_name in df.columns:
                             # Nếu là file MAPPING thì bỏ qua không tạo child node UNIQUE_ID (vì đã tạo attribute phía trên)
-                            if not (is_personal or is_school or is_parent or is_movement) and col_name == 'UNIQUE_ID':
+                            if not (is_personal or is_school or is_parent or is_movement or is_custodial) and col_name == 'UNIQUE_ID':
                                 continue
                                 
                             xml_tag = col_name
                             # Đồng bộ cột UNIQUE_ID của Excel thành STUDENT_UNIQUE_ID trong XML phân hệ
-                            if col_name == 'UNIQUE_ID' and (is_personal or is_school or is_parent or is_movement):
+                            if col_name == 'UNIQUE_ID' and (is_personal or is_school or is_parent or is_movement or is_custodial):
                                 xml_tag = 'STUDENT_UNIQUE_ID'
                                 
                             child = ET.SubElement(row_element, xml_tag)
