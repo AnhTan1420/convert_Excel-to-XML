@@ -120,7 +120,7 @@ with st.expander("📥 Download Excel Sample Templates", expanded=True):
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True
         )
-      with col_t6:
+    with col_t6:
         st.download_button(
             label="📁 STUDENT_CUSTODIAL",
             data=generate_template(TEMPLATE_COLUMNS["CUSTODIAL"]),
