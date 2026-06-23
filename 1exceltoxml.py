@@ -235,7 +235,7 @@ if uploaded_files:
                         elif is_movement:
                             row_element = ET.SubElement(root, 'MOVEMENT')
                         elif is_custodial:
-                            row_element = ET.SubElement(root, 'CUSTODIAL')
+                            row_element = ET.SubElement(root, 'STUDENT_CUSTODIAL_INFO_MK')
                         else:
                             # Đối với file MAPPING, đưa UNIQUE_ID thành attribute của thẻ ID_Mapping
                             row_element = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': unique_id_val})
