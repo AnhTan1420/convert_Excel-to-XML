@@ -12,8 +12,8 @@ st.title("MOE: Convert XLSX/CSV to XML and compress to ZIP")
 
 # --- KHU VỰC ĐƯỢC THÊM MỚI: SINH 900.000 DÒNG DỮ LIỆU LỚN ---
 st.markdown("---")
-with st.expander("🔥 Siêu cấu hình: Sinh dữ liệu mẫu dung lượng lớn (900K Records)", expanded=True):
-    st.write("Hệ thống sẽ tự động sinh dữ liệu cấu trúc `CUSTODIAL` tuần tự từ 1 đến 900.000 và nén trực tiếp vào tệp ZIP để tối ưu bộ nhớ.")
+with st.expander("Generate 900K Records)", expanded=True):
+    st.write("Automatically generate `CUSTODIAL` structure data sequentially from 1 to 900,000 and compress it directly into a ZIP file to optimize memory.")
     
     # Sử dụng nút bấm kiểm soát trạng thái sinh file
     if st.button("⚡ Bắt đầu tạo 900.000 bản ghi ZIP", type="secondary", use_container_width=True):
