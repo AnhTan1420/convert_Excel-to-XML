@@ -10,84 +10,6 @@ st.set_page_config(page_title="MOE Jordan", page_icon="⚙️", layout="centered
 
 st.title("MOE: Convert XLSX/CSV to XML and compress to ZIP")
 
-# --- KHU VỰC ĐƯỢC THÊM MỚI: SINH 900.000 DÒNG DỮ LIỆU LỚN ---
-st.markdown("---")
-with st.expander("🔥 Siêu cấu hình: Sinh dữ liệu mẫu dung lượng lớn (900K Records)", expanded=True):
-    st.write("Hệ thống sẽ tự động sinh dữ liệu cấu trúc `CUSTODIAL` tuần tự từ 1 đến 900.000 và nén trực tiếp vào tệp ZIP để tối ưu bộ nhớ.")
-    
-    # Sử dụng nút bấm kiểm soát trạng thái sinh file
-    if st.button("⚡ Bắt đầu tạo 900.000 bản ghi ZIP", type="secondary", use_container_width=True):
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        
-        status_text.text("⏳ Đang khởi tạo luồng nén dữ liệu...")
-        current_time = time.strftime('%Y%m%d%H%M%S')
-        xml_filename = f"FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}.xml"
-        zip_filename = f"FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}.zip"
-        
-        # Định nghĩa cấu phần cố định
-        NS_XSI = "http://www.w3.org/2001/XMLSchema-instance"
-        total_records = 900000
-        
-        # Tạo bộ đệm lưu file ZIP trực tiếp
-        zip_buffer = io.BytesIO()
-        
-        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # Khởi tạo nội dung XML theo dạng chuỗi để tăng tốc tối đa
-            header = f"<?xml version='1.0' encoding='UTF-8'?>\n<INTERFACE xmlns:xs=\"{NS_XSI}\" INTERFACE_NAME=\"custodial_info_mk\" FILE_CREATED_TIME=\"{str(int(time.time() * 1000))}\" FILE_NAME=\"{xml_filename}\" NO_RECORD=\"{total_records}\">\n"
-            
-            # Ghi phần mở đầu vào một file ảo trong ZIP
-            xml_chunks = [header]
-            
-            # Chia nhỏ vòng lặp để cập nhật UI Streamlit không bị đóng băng
-            chunk_size = 100000
-            for i in range(1, total_records + 1):
-                row_str = (
-                    f"  <STUDENT_CUSTODIAL_INFO_MK>\n"
-                    f"    <RECORD_ID>{i}</RECORD_ID>\n"
-                    f"    <STUDENT_UNIQUE_ID UNIQUE_ID=\"Y\">JDK-{i}-DIF</STUDENT_UNIQUE_ID>\n"
-                    f"    <PARENT_UNIQUE_ID UNIQUE_ID=\"Y\">JDKRP-{i}</PARENT_UNIQUE_ID>\n"
-                    f"    <RELATION_ICODE>G4</RELATION_ICODE>\n"
-                    f"    <CUSTODIAL_INFO>JN</CUSTODIAL_INFO>\n"
-                    f"    <RELATIONSHIP xmlns:xs=\"{NS_XSI}\" xs:nil=\"true\" />\n"
-                    f"    <PG_ACCESS_IND>2</PG_ACCESS_IND>\n"
-                    f"    <LAST_UPDATED_DATE>2026-06-30</LAST_UPDATED_DATE>\n"
-                    f"  </STUDENT_CUSTODIAL_INFO_MK>\n"
-                )
-                xml_chunks.append(row_str)
-                
-                # Cứ sau 100k bản ghi thì giải phóng bộ nhớ lưu vào zip nháp
-                if i % chunk_size == 0:
-                    status_text.text(f"⏳ Đang xử lý khối dữ liệu: {i:,} / {total_records:,} bản ghi...")
-                    progress_bar.progress(i / total_records)
-            
-            xml_chunks.append("</INTERFACE>")
-            
-            # Gom tất cả lại và đưa vào cấu trúc file nén
-            full_xml_string = "".join(xml_chunks)
-            zipf.writestr(xml_filename, full_xml_string.encode('utf-8'))
-            
-        status_text.text("🎉 Tạo file hoàn tất! Sẵn sàng tải xuống.")
-        progress_bar.empty()
-        
-        # Lưu vào session để hiển thị nút download cố định
-        st.session_state["large_zip_data"] = zip_buffer.getvalue()
-        st.session_state["large_zip_name"] = zip_filename
-
-    # Hiển thị nút tải file xuống nếu dữ liệu đã được build xong trong phiên làm việc
-    if "large_zip_data" in st.session_state:
-        st.success(f"📦 Đã tạo xong file: `{st.session_state['large_zip_name']}`")
-        st.download_button(
-            label="📥 BẤM VÀO ĐÂY ĐỂ TẢI FILE ZIP (900K DATA)",
-            data=st.session_state["large_zip_data"],
-            file_name=st.session_state["large_zip_name"],
-            mime="application/zip",
-            use_container_width=True
-        )
-st.markdown("---")
-# --- KẾT THÚC KHU VỰC THÊM MỚI ---
-
-
 # Initialize Session States to prevent download button data-loss on click
 if "download_queue" not in st.session_state:
     st.session_state.download_queue = []
@@ -154,7 +76,7 @@ TEMPLATE_COLUMNS = {
 }
 
 # Sample file download box (Templates)
-with st.expander("📥 Download Excel Sample Templates", expanded=False):
+with st.expander("📥 Download Excel Sample Templates", expanded=True):
     st.markdown("Select the School Cockpit MK template type below to download the standard Excel file structure:")
     col_t1, col_t2, col_t3, col_t4, col_t5, col_t6 = st.columns(6)
     
@@ -224,6 +146,7 @@ with st.expander("📘 System Guidelines & Target Interface Identifiers", expand
     """)
 
 st.markdown("### 📤 Source File Upload")
+# Cập nhật: Thêm "csv" vào danh sách type được chấp nhận
 uploaded_files = st.file_uploader(
     "Drag and drop or browse Excel workbooks (.xlsx) or CSV files (.csv)", 
     type=["xlsx", "csv"], 
@@ -277,6 +200,7 @@ if uploaded_files:
                 is_custodial = (base_prefix == "FULL_SFS_STUDENT_CUSTODIAL_INFO_MK")
                 
                 try:
+                    # Cập nhật: Kiểm tra định dạng đuôi file để dùng hàm đọc phù hợp
                     if file_name.lower().endswith(".csv"):
                         df = pd.read_csv(uploaded_file, encoding='utf-8')
                     else:
@@ -302,6 +226,7 @@ if uploaded_files:
                     
                     for index, row in df.iterrows():
                         id_col = 'UNIQUE_ID' if 'UNIQUE_ID' in df.columns else ('STUDENT_UNIQUE_ID' if 'STUDENT_UNIQUE_ID' in df.columns else None)
+                        
                         unique_id_val = str(row[id_col]) if id_col and row[id_col] != "" else ""
                         
                         if is_personal:
