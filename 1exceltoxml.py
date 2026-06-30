@@ -8,7 +8,7 @@ import zipfile
 # App Workspace Configuration
 st.set_page_config(page_title="MOE Jordan", page_icon="⚙️", layout="centered")
 
-st.title("MOE: Convert XLSX to XML and compress to ZIP")
+st.title("MOE: Convert XLSX/CSV to XML and compress to ZIP")
 
 # Initialize Session States to prevent download button data-loss on click
 if "download_queue" not in st.session_state:
@@ -146,9 +146,10 @@ with st.expander("📘 System Guidelines & Target Interface Identifiers", expand
     """)
 
 st.markdown("### 📤 Source File Upload")
+# Cập nhật: Thêm "csv" vào danh sách type được chấp nhận
 uploaded_files = st.file_uploader(
-    "Drag and drop or browse Excel workbooks (.xlsx)", 
-    type=["xlsx"], 
+    "Drag and drop or browse Excel workbooks (.xlsx) or CSV files (.csv)", 
+    type=["xlsx", "csv"], 
     accept_multiple_files=True
 )
 
@@ -199,7 +200,11 @@ if uploaded_files:
                 is_custodial = (base_prefix == "FULL_SFS_STUDENT_CUSTODIAL_INFO_MK")
                 
                 try:
-                    df = pd.read_excel(uploaded_file, engine='openpyxl')
+                    # Cập nhật: Kiểm tra định dạng đuôi file để dùng hàm đọc phù hợp
+                    if file_name.lower().endswith(".csv"):
+                        df = pd.read_csv(uploaded_file, encoding='utf-8')
+                    else:
+                        df = pd.read_excel(uploaded_file, engine='openpyxl')
                     
                     df = df.fillna("")
                     df = df.astype(str)
@@ -222,10 +227,8 @@ if uploaded_files:
                     for index, row in df.iterrows():
                         id_col = 'UNIQUE_ID' if 'UNIQUE_ID' in df.columns else ('STUDENT_UNIQUE_ID' if 'STUDENT_UNIQUE_ID' in df.columns else None)
                         
-                        # Thay vì bỏ qua toàn bộ dòng, ta giữ giá trị rỗng nếu ID không tồn tại hoặc null
                         unique_id_val = str(row[id_col]) if id_col and row[id_col] != "" else ""
                         
-                        # Initialize the parent Tag Block based on the Interface subsystem
                         if is_personal:
                             row_element = ET.SubElement(root, 'STUDENT_BASIC_PERSONAL')
                         elif is_school:
@@ -237,28 +240,22 @@ if uploaded_files:
                         elif is_custodial:
                             row_element = ET.SubElement(root, 'STUDENT_CUSTODIAL_INFO_MK')
                         else:
-                            # Đối với file MAPPING, đưa UNIQUE_ID thành attribute của thẻ ID_Mapping
                             row_element = ET.SubElement(root, 'ID_Mapping', {'UNIQUE_ID': unique_id_val})
                             
-                        # Scan all columns in correct sort order in sample Excel
                         for col_name in df.columns:
-                            # Nếu là file MAPPING thì bỏ qua không tạo child node UNIQUE_ID (vì đã tạo attribute phía trên)
                             if not (is_personal or is_school or is_parent or is_movement or is_custodial) and col_name == 'UNIQUE_ID':
                                 continue
                                 
                             xml_tag = col_name
-                            # Đồng bộ cột UNIQUE_ID của Excel thành STUDENT_UNIQUE_ID trong XML phân hệ
                             if col_name == 'UNIQUE_ID' and (is_personal or is_school or is_parent or is_movement or is_custodial):
                                 xml_tag = 'STUDENT_UNIQUE_ID'
                                 
                             child = ET.SubElement(row_element, xml_tag)
                             val = row[col_name]
                             
-                            # Đính kèm attribute UNIQUE_ID="Y" cho các thẻ khóa định danh hệ thống
                             if xml_tag in ['STUDENT_UNIQUE_ID', 'PARENT_UNIQUE_ID']:
                                 child.set('UNIQUE_ID', 'Y')
                                 
-                            # Nếu giá trị rỗng (bao gồm cả trường hợp UNIQUE_ID rỗng ở các phân hệ), set nil=true
                             if val == "":
                                 child.set(f"{{{NS}}}nil", "true")
                             else:
