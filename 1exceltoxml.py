@@ -12,11 +12,11 @@ st.title("MOE: Convert XLSX/CSV to XML and compress to ZIP")
 
 # --- KHU VỰC ĐƯỢC THÊM MỚI: SINH 900.000 DÒNG DỮ LIỆU LỚN ---
 st.markdown("---")
-with st.expander("Generate 900K Records)", expanded=True):
+with st.expander("Generate 900K Records)", expanded=False):
     st.write("Automatically generate `CUSTODIAL` structure data sequentially from 1 to 900,000 and compress it directly into a ZIP file to optimize memory.")
     
     # Sử dụng nút bấm kiểm soát trạng thái sinh file
-    if st.button("⚡ Bắt đầu tạo 900.000 bản ghi ZIP", type="secondary", use_container_width=True):
+    if st.button("Bắt đầu tạo", type="secondary", use_container_width=True):
         progress_bar = st.progress(0)
         status_text = st.empty()
         
@@ -154,7 +154,7 @@ TEMPLATE_COLUMNS = {
 }
 
 # Sample file download box (Templates)
-with st.expander("📥 Download Excel Sample Templates", expanded=False):
+with st.expander("📥 Download Excel Sample Templates", expanded=True):
     st.markdown("Select the School Cockpit MK template type below to download the standard Excel file structure:")
     col_t1, col_t2, col_t3, col_t4, col_t5, col_t6 = st.columns(6)
     
