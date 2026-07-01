@@ -102,6 +102,9 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
         rows_personal_xlsx = []
         rows_parent_xlsx = []
         rows_custodial_xlsx = []
+        
+        # Temporary registry to hold exact code inheritance for Section 2 sample generator too
+        sample_relation_heritage = {}
 
         root_map = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_ID_Mapping_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.xml', 'NO_RECORD': '10'})
         ET.register_namespace('xs', NS_XSI)
@@ -121,9 +124,9 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
             uin_val = random_uin()
             mapped_student_uins[s_id] = uin_val 
             ET.SubElement(item, 'STUDENT_UIN_FIN_NO').text = uin_val
-            ET.SubElement(item, 'PARENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, f'{{{NS_XSI}}}PARENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
             ET.SubElement(item, 'STUDENT_UINFIN_TYPE_ICODE').text = '1'
-            ET.SubElement(item, 'PREV_NRIC_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, f'{{{NS_XSI}}}PREV_NRIC_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
             rows_mapping_xlsx.append({"UNIQUE_ID": s_id, "STUDENT_UIN_FIN_NO": uin_val, "PARENT_UIN_FIN_NO": "", "STUDENT_UINFIN_TYPE_ICODE": "1", "PREV_NRIC_UIN_FIN_NO": ""})
             
         sync_files[f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.zip'] = (f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.xml', root_map)
@@ -212,6 +215,9 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
             ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p_id
             
             relation_icode = random.choice(relation_codes_list)
+            # Register code relation for Custodial heritage mapping
+            sample_relation_heritage[f"{s_id}_{p_id}"] = relation_icode
+            
             uin_from_mapping = mapped_student_uins.get(s_id, "UNKNOWN")
             parent_name = f"Parent-Of-{uin_from_mapping}"
             p_eff_date = f"{random.randint(10, 28)}-{random.choice(months_list)}-{random.randint(1980, 2010)}"
@@ -251,14 +257,18 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
             ET.SubElement(item, 'RECORD_ID').text = str(idx)
             ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = s_id
             ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p_id
-            ET.SubElement(item, 'RELATION_ICODE').text = 'G4'
+            
+            # IMPROVEMENT: Inherit precise RELATION_ICODE mapped from Parent block 
+            inherited_icode = sample_relation_heritage.get(f"{s_id}_{p_id}", "G4")
+            ET.SubElement(item, 'RELATION_ICODE').text = inherited_icode
+            
             ET.SubElement(item, 'CUSTODIAL_INFO').text = 'JN'
-            ET.SubElement(item, 'RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, f'{{{NS_XSI}}}RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
             ET.SubElement(item, 'PG_ACCESS_IND').text = '2'
             ET.SubElement(item, 'LAST_UPDATED_DATE').text = '2026-06-30'
             
             rows_custodial_xlsx.append({
-                "RECORD_ID": str(idx), "UNIQUE_ID": s_id, "PARENT_UNIQUE_ID": p_id, "RELATION_ICODE": "G4",
+                "RECORD_ID": str(idx), "UNIQUE_ID": s_id, "PARENT_UNIQUE_ID": p_id, "RELATION_ICODE": inherited_icode,
                 "CUSTODIAL_INFO": "JN", "RELATIONSHIP": "", "PG_ACCESS_IND": "2", "LAST_UPDATED_DATE": "2026-06-30"
             })
         sync_files[f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_timestamp}.zip'] = (f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_timestamp}.xml', root_custodial)
@@ -270,7 +280,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
             pd.DataFrame(rows_parent_xlsx).to_excel(writer, sheet_name="STUDENT_PARENT", index=False)
             pd.DataFrame(rows_custodial_xlsx).to_excel(writer, sheet_name="STUDENT_CUSTODIAL", index=False)
         st.session_state["sync_xlsx_data"] = xlsx_buffer.getvalue()
-        st.session_state["sync_xlsx_name"] = f"SAMPLE_DATA_ID_MAPPING_{current_timestamp}.xlsx"
+        st.session_state["sync_xlsx_name"] = f"SYNC_SYSTEM_SAMPLE_DATA_{current_timestamp}.xlsx"
 
         st.session_state["sync_download_queue"] = []
         for zip_name, (xml_name, xml_node) in sync_files.items():
@@ -315,9 +325,9 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
                     use_container_width=True
                 )
 
-# --- SECTION 3: WORKBOOK SOURCE CONVERSION ENGINE (NO NAMESPACE FOR BLANK TAGS) ---
+# --- SECTION 3: WORKBOOK SOURCE CONVERSION ENGINE (SMART AUTO-ROUTER LOGIC) ---
 st.markdown("---")
-st.subheader("⚙️ Automated System-wide Generation from ID Mapping")
+st.subheader("⚙️ Automated Smart Converter Engine")
 
 if "pipeline_download_queue" not in st.session_state:
     st.session_state.pipeline_download_queue = []
@@ -336,11 +346,10 @@ TEMPLATE_COLUMNS = {
     "PERSONAL": ["RECORD_ID", "UNIQUE_ID", "STUDENT_NAME", "HANYU_PINYIN_NAME", "BIRTH_DATE", "CITIZENSHIP_CODE", "CITIZENSHIP_SGDRM_CODE", "RACE_CODE", "RELIGION_CODE", "RELIGION_SGDRM_CODE", "SEX_CODE", "EMAIL_ADDRESS", "CITIZENSHIP_EFFECTIVE_DATE", "CONTACT_SAMEAS_OFFICIAL_IND", "CONTACTADD_BLK_HSE_NO", "CONTACTADD_STREET_NAME", "CONTACTADD_FLOOR_NO", "CONTACTADD_UNIT_NO", "CONTACTADD_BLDG_NAME", "CONTACTADD_POSTAL_ECODE", "TELEPHONE_NO", "HANDPHONE_NO", "OTHER_CONTACT_NO", "RES_TYPE_CODE", "OFFICIALADD_BLK_HSE_NO", "OFFICIALADD_STREET_NAME", "OFFICIALADD_FLOOR_NO", "OFFICIALADD_UNIT_NO", "OFFICIALADD_BLDG_NAME", "OFFICIALADD_POSTAL_ECODE", "FOREIGNADD_LINE1_DESC", "FOREIGNADD_LINE2_DESC", "FOREIGNADD_POSTAL_ECODE", "FOREIGNADD_COUNTRY_CODE", "FOREIGNADD_CONTACTCODE_NO_OLD", "FOREIGNADD_CONTACT_NO_OLD", "FOREIGNADD_CONTACTCODE_NO", "FOREIGNADD_CONTACT_NO", "FOREIGNADD_COUNTRY_SGDRM_CODE", "ADDRESS_IND", "CONTACTADD_STREET_CODE", "OFFICIALADD_STREET_CODE", "GUARDIAN_TYPE_ICODE", "PASS_TYPE_CODE", "PASS_ISSUE_DATE", "PASS_EXPIRY_DATE", "RACE_REQUEST_DATE", "PR_TYPE"],
     "SCHOOL": ["RECORD_ID", "UNIQUE_ID", "STUDENT_STATUS_ICODE", "SCHOOL_CODE", "ADMISSION_NO", "ACADEMIC_YEAR", "LEVEL_XCODE", "STREAM_XCODE", "CLASS_XCODE", "CLASS_SERIAL_NO", "COURSE_TYPE_CODE", "FIRSTLANGUAGE_L1_CODE", "SECONDLANGUAGE_L2_CODE", "LEAVE_OF_ABSENCE_IND", "REPEAT_STUD_IND", "ACAD_STATUS_ICODE", "EFFECTIVE_DATE", "SCHOOL_NAME", "CLASS_NAME", "LEVEL_NAME", "STREAM_NAME", "COURSE_XCODE", "COURSE_NAME", "COURSE_TYPE_NAME", "INTF_PROMOTION_IND", "RECOMMENDED_LEVEL_XCODE", "RECOMMENDED_STREAM_XCODE", "JC_PROVISIONAL_IND", "POSTED_IND", "MATRICULATION_NO", "IP_IND"],
     "PARENT": ["RECORD_ID", "UNIQUE_ID", "PARENT_UNIQUE_ID", "RELATION_ICODE", "PARENT_GUARDIAN_NAME", "CITIZENSHIP_CODE", "RACE_CODE", "STANDARD_ATTENDED_CODE", "DECEASED_YEAR", "TELEPHONE_NO", "HANDPHONE_NO", "OTHER_CONTACT_NO", "BIRTH_DATE", "EMAIL_ADDRESS", "CITIZENSHIP_EFFECTIVE_DATE", "CITIZENSHIP_SGDRM_CODE", "PR_TYPE", "NRIC_BLK_HSE_NO", "NRIC_STREET_CODE", "NRIC_FLOOR_NO", "NRIC_UNIT_NO", "NRIC_POSTAL_ECODE"],
-    "MOVEMENT": ["RECORD_ID", "UNIQUE_ID", "PARENT_UNIQUE_ID", "RELATION_ICODE", "PARENT_GUARDIAN_NAME", "CITIZENSHIP_CODE", "RACE_CODE", "STANDARD_ATTENDED_CODE", "DECEASED_YEAR", "TELEPHONE_NO", "HANDPHONE_NO", "OTHER_CONTACT_NO", "BIRTH_DATE", "EMAIL_ADDRESS", "CITIZENSHIP_EFFECTIVE_DATE", "CITIZENSHIP_SGDRM_CODE", "PR_TYPE", "NRIC_BLK_HSE_NO", "NRIC_STREET_CODE", "NRIC_FLOOR_NO", "NRIC_UNIT_NO", "NRIC_POSTAL_ECODE"],
+    "MOVEMENT": ["RECORD_ID", "UNIQUE_ID", "STRAT_DATE", "END_DATE", "REASON"],
     "CUSTODIAL": ["RECORD_ID", "UNIQUE_ID", "PARENT_UNIQUE_ID", "RELATION_ICODE", "CUSTODIAL_INFO", "RELATIONSHIP", "PG_ACCESS_IND", "LAST_UPDATED_DATE"]
 }
 
-# 📥 EXPANEDER FOR EXCEL SAMPLE TEMPLATES
 with st.expander("📥 Download Excel Sample Templates", expanded=False):
     st.markdown("Select the School Cockpit MK template type below to download the standard Excel file structure:")
     col_t1, col_t2, col_t3, col_t4, col_t5, col_t6 = st.columns(6)
@@ -351,154 +360,165 @@ with st.expander("📥 Download Excel Sample Templates", expanded=False):
     with col_t5: st.download_button("📁 MOVEMENT", generate_template(TEMPLATE_COLUMNS["MOVEMENT"]), "Template_MOVEMENT.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
     with col_t6: st.download_button("📁 CUSTODIAL", generate_template(TEMPLATE_COLUMNS["CUSTODIAL"]), "Template_STUDENT_CUSTODIAL.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
 
-# 📘 SYSTEM GUIDELINES TABLE
-with st.expander("📘 System Guidelines & Target Interface Identifiers", expanded=False):
-    st.markdown("""
-    The processing engine matches files based on case-insensitive keyword tokens within the filename. 
-    Each valid file type will generate its own dedicated, isolated ZIP archive.
-    
-    | Target System Interface | Accepted File Keyword | Generated Payload Prefix | XML Row Structure |
-    | :--- | :--- | :--- | :--- |
-    | **ID Mapping** | `Mapping` | `FULL_SFS_ID_MAPPING_MK_*` | `<ID_Mapping UNIQUE_ID="...">` |
-    | **Basic Personal** | `Personal` | `FULL_SFS_STUDENT_BASIC_PERSONAL_MK_*` | `<STUDENT_BASIC_PERSONAL>` |
-    | **Basic School** | `School` | `FULL_SFF_STUDENT_BASIC_SCHOOL_MK_*` | `<STUDENT_BASIC_SCHOOL>` |
-    | **Student Parent** | `Parent` | `FULL_SFS_STUDENT_PARENT_MK_*` | `<STUDENT_PARENT>` |
-    | **Student Custodial** | `Custodial` | `FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_*` | `<STUDENT_CUSTODIAL_INFO_MK>` |
-    | **Movement** | `Movement` | `FULL_SFS_MOVEMENT_MK_*` | `<MOVEMENT>` |
-    """)
+st.markdown("### 📤 Source File Upload (Smart Detection Enabled)")
+uploaded_any_file = st.file_uploader("Upload ANY single template file (.xlsx or .csv) to generate corresponding XML/ZIP files.", type=["xlsx", "csv"], accept_multiple_files=False)
 
-st.markdown("### 📤 Source File Upload")
-uploaded_mapping_file = st.file_uploader("Upload ONE single ID Mapping File (.xlsx or .csv) to auto-generate all 4 XML Bundles", type=["xlsx", "csv"], accept_multiple_files=False)
-
-if uploaded_mapping_file:
-    st.info(f"📋 **Stage Queue:** `{uploaded_mapping_file.name}` loaded into session memory.")
+if uploaded_any_file:
+    st.info(f"📋 **Stage Queue:** `{uploaded_any_file.name}` loaded into session memory.")
     
-    if st.button("🚀 Execute Workbook Transformation", type="primary", use_container_width=True):
+    if st.button("🚀 Execute Smart Conversion", type="primary", use_container_width=True):
         st.session_state.pipeline_download_queue = []
         current_time = time.strftime('%Y%m%d%H%M%S')
         epoch_ms = str(int(time.time() * 1000))
         NS_XSI = "http://www.w3.org/2001/XMLSchema-instance"
         
         try:
-            if uploaded_mapping_file.name.lower().endswith(".csv"):
-                df_map = pd.read_csv(uploaded_mapping_file, encoding='utf-8')
+            if uploaded_any_file.name.lower().endswith(".csv"):
+                df_input = pd.read_csv(uploaded_any_file, encoding='utf-8')
             else:
-                df_map = pd.read_excel(uploaded_mapping_file, engine='openpyxl')
+                df_input = pd.read_excel(uploaded_any_file, engine='openpyxl')
                 
-            df_map = df_map.fillna("").astype(str)
-            for col in df_map.columns:
-                df_map[col] = df_map[col].apply(lambda x: x.split(".")[0] if x.endswith(".0") else x)
+            df_input = df_input.fillna("").astype(str)
+            for col in df_input.columns:
+                df_input[col] = df_input[col].apply(lambda x: x.split(".")[0] if x.endswith(".0") else x)
             
-            student_records = []
-            parent_records = []
+            headers = [c.strip() for c in df_input.columns]
+            detected_mode = "UNKNOWN"
             
-            for _, row in df_map.iterrows():
-                uid = row.get("UNIQUE_ID", "").strip()
-                st_uin = row.get("STUDENT_UIN_FIN_NO", "").strip()
-                pt_uin = row.get("PARENT_UIN_FIN_NO", "").strip()
+            # Smart Routing Matrix by checking headers
+            if "STUDENT_UIN_FIN_NO" in headers and "PARENT_UIN_FIN_NO" in headers:
+                detected_mode = "MAPPING"
+            elif "STUDENT_NAME" in headers and "BIRTH_DATE" in headers:
+                detected_mode = "PERSONAL"
+            elif "PARENT_GUARDIAN_NAME" in headers and "PARENT_UNIQUE_ID" in headers:
+                detected_mode = "PARENT"
+            elif "CUSTODIAL_INFO" in headers and "RELATIONSHIP" in headers:
+                detected_mode = "CUSTODIAL"
+            elif "SCHOOL_CODE" in headers and "ADMISSION_NO" in headers:
+                detected_mode = "SCHOOL"
+            elif "STRAT_DATE" in headers or "REASON" in headers:
+                detected_mode = "MOVEMENT"
                 
-                if uid:
-                    if st_uin != "":
-                        student_records.append({"id": uid, "uin": st_uin})
-                    elif pt_uin != "":
-                        parent_records.append({"id": uid, "uin": pt_uin})
-
-            paired_records = []
-            min_len = min(len(student_records), len(parent_records))
-            for i in range(min_len):
-                paired_records.append({
-                    "student_id": student_records[i]["id"],
-                    "student_uin": student_records[i]["uin"],
-                    "parent_id": parent_records[i]["id"],
-                    "parent_uin": parent_records[i]["uin"]
-                })
+            st.write(f"🔍 **Engine Status:** Detected input data structure matches layout: **{detected_mode}**")
             
-            relation_codes_list = ['F', 'M', 'G', 'G4']
             generated_xmls = {}
 
-            # --- 1. FILE ID MAPPING XML ---
-            root_map = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_ID_Mapping_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_ID_MAPPING_MK_{current_time}.xml', 'NO_RECORD': str(len(df_map))})
-            ET.register_namespace('xs', NS_XSI)
-            for _, row in df_map.iterrows():
-                uid = row.get("UNIQUE_ID", "").strip()
-                item = ET.SubElement(root_map, 'ID_Mapping', {'UNIQUE_ID': uid})
+            # --- ROUTE 1: PIPELINE PIPELINE AUTOMATION MODE (IF MAPPING FILE) ---
+            if detected_mode == "MAPPING":
+                student_records = []
+                parent_records = []
+                for _, row in df_input.iterrows():
+                    uid = row.get("UNIQUE_ID", "").strip()
+                    st_uin = row.get("STUDENT_UIN_FIN_NO", "").strip()
+                    pt_uin = row.get("PARENT_UIN_FIN_NO", "").strip()
+                    if uid:
+                        if st_uin: student_records.append({"id": uid, "uin": st_uin})
+                        elif pt_uin: parent_records.append({"id": uid, "uin": pt_uin})
                 
-                st_uin = row.get("STUDENT_UIN_FIN_NO", "").strip()
-                pt_uin = row.get("PARENT_UIN_FIN_NO", "").strip()
-                st_type = row.get("STUDENT_UINFIN_TYPE_ICODE", "").strip()
-                prev_nric = row.get("PREV_NRIC_UIN_FIN_NO", "").strip()
+                paired_records = []
+                min_len = min(len(student_records), len(parent_records))
+                for i in range(min_len):
+                    paired_records.append({
+                        "student_id": student_records[i]["id"], "student_uin": student_records[i]["uin"],
+                        "parent_id": parent_records[i]["id"], "parent_uin": parent_records[i]["uin"]
+                    })
                 
-                if st_uin: ET.SubElement(item, 'STUDENT_UIN_FIN_NO').text = st_uin
-                else: ET.SubElement(item, 'STUDENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
+                # Build Map XML
+                root_map = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_ID_Mapping_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_ID_MAPPING_MK_{current_time}.xml', 'NO_RECORD': str(len(df_input))})
+                ET.register_namespace('xs', NS_XSI)
+                for _, row in df_input.iterrows():
+                    uid = row.get("UNIQUE_ID", "").strip()
+                    item = ET.SubElement(root_map, 'ID_Mapping', {'UNIQUE_ID': uid})
+                    for col in ["STUDENT_UIN_FIN_NO", "PARENT_UIN_FIN_NO", "STUDENT_UINFIN_TYPE_ICODE", "PREV_NRIC_UIN_FIN_NO"]:
+                        val = row.get(col, "").strip()
+                        if val: ET.SubElement(item, col).text = val
+                        else: ET.SubElement(item, col).set(f"{{{NS_XSI}}}nil", "true")
+                generated_xmls[f'FULL_SFS_ID_MAPPING_MK_{current_time}'] = root_map
+
+                # Build Personal (Mock Data based on mapping)
+                root_pers = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_Personal_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}.xml', 'NO_RECORD': str(len(student_records))})
+                for st_rec in student_records:
+                    item = ET.SubElement(root_pers, 'STUDENT_BASIC_PERSONAL')
+                    ET.SubElement(item, 'RECORD_ID').text = '1'
+                    ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = st_rec["id"]
+                    ET.SubElement(item, 'STUDENT_NAME').text = f"Student-{st_rec['uin']}"
+                    ET.SubElement(item, 'BIRTH_DATE').text = "15-JAN-2005"
+                    for blank in TEMPLATE_COLUMNS["PERSONAL"][4:]:
+                        ET.SubElement(item, blank).set(f"{{{NS_XSI}}}nil", "true")
+                generated_xmls[f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}'] = root_pers
+
+                # Dictionary registry tracking mapped relation code values for inheritance synchronization
+                pipeline_relation_heritage = {}
+                relation_codes_list = ['F', 'M', 'G', 'G4']
+
+                # Build Parent (Mock Data based on mapping pairs)
+                root_parent = ET.Element('INTERFACE', {'INTERFACE_NAME': 'Student_Parent', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_PARENT_MK_{current_time}.xml', 'NO_RECORD': str(len(paired_records))})
+                for p in paired_records:
+                    item = ET.SubElement(root_parent, 'STUDENT_PARENT')
+                    ET.SubElement(item, 'RECORD_ID').text = '1'
+                    ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p["student_id"]
+                    ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p["parent_id"]
                     
-                if pt_uin: ET.SubElement(item, 'PARENT_UIN_FIN_NO').text = pt_uin
-                else: ET.SubElement(item, 'PARENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
+                    random_relation = random.choice(relation_codes_list)
+                    ET.SubElement(item, 'RELATION_ICODE').text = random_relation
                     
-                if st_type: ET.SubElement(item, 'STUDENT_UINFIN_TYPE_ICODE').text = st_type
-                else: ET.SubElement(item, 'STUDENT_UINFIN_TYPE_ICODE').set(f"{{{NS_XSI}}}nil", "true")
+                    # Store relation into memory mapped by Student and Parent key pair
+                    pipeline_relation_heritage[f"{p['student_id']}_{p['parent_id']}"] = random_relation
                     
-                if prev_nric: ET.SubElement(item, 'PREV_NRIC_UIN_FIN_NO').text = prev_nric
-                else: ET.SubElement(item, 'PREV_NRIC_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
-            generated_xmls[f'FULL_SFS_ID_MAPPING_MK_{current_time}'] = root_map
+                    for blank in TEMPLATE_COLUMNS["PARENT"][4:]:
+                        ET.SubElement(item, blank).set(f"{{{NS_XSI}}}nil", "true")
+                generated_xmls[f'FULL_SFS_STUDENT_PARENT_MK_{current_time}'] = root_parent
 
-            # --- 2. FILE BASIC PERSONAL XML ---
-            root_pers = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_Personal_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}.xml', 'NO_RECORD': str(len(student_records))})
-            for st_rec in student_records:
-                item = ET.SubElement(root_pers, 'STUDENT_BASIC_PERSONAL')
-                ET.SubElement(item, 'RECORD_ID').text = '1'
-                ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = st_rec["id"]
-                ET.SubElement(item, 'STUDENT_NAME').text = f"Student-{st_rec['uin']}"
-                ET.SubElement(item, 'HANYU_PINYIN_NAME').text = 'HANYUPINYIN'
-                ET.SubElement(item, 'BIRTH_DATE').text = f"{random.randint(10,28)}-JAN-{random.randint(2001,2008)}"
-                ET.SubElement(item, 'CITIZENSHIP_CODE').text = '10'
-                ET.SubElement(item, 'CITIZENSHIP_SGDRM_CODE').text = 'SG'
-                ET.SubElement(item, 'RACE_CODE').text = '2'
-                ET.SubElement(item, 'RELIGION_CODE').text = '9'
-                ET.SubElement(item, 'RELIGION_SGDRM_CODE').text = 'F'
-                ET.SubElement(item, 'SEX_CODE').text = random.choice(['M', 'F'])
-                ET.SubElement(item, 'EMAIL_ADDRESS').text = f"student_{st_rec['uin'].lower()}@yopmail.com"
-                ET.SubElement(item, 'CITIZENSHIP_EFFECTIVE_DATE').text = f"01-JAN-2020"
-                ET.SubElement(item, 'CONTACT_SAMEAS_OFFICIAL_IND').text = 'Y'
-                ET.SubElement(item, 'CONTACTADD_BLK_HSE_NO').text = '100'
-                ET.SubElement(item, 'CONTACTADD_STREET_NAME').text = 'Main Street'
-                ET.SubElement(item, 'CONTACTADD_POSTAL_ECODE').text = '654321'
+                # Build Custodial (Inherits RELATION_ICODE directly from Parent block registry maps)
+                root_custodial = ET.Element('INTERFACE', {'INTERFACE_NAME': 'custodial_info_mk', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}.xml', 'NO_RECORD': str(len(paired_records))})
+                for idx, p in enumerate(paired_records, start=1):
+                    item = ET.SubElement(root_custodial, 'STUDENT_CUSTODIAL_INFO_MK')
+                    ET.SubElement(item, 'RECORD_ID').text = str(idx)
+                    ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p["student_id"]
+                    ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p["parent_id"]
+                    
+                    # CRITICAL IMPROVEMENT: Inheriting dynamic relation code accurately from registered collection mapping
+                    inherited_relation = pipeline_relation_heritage.get(f"{p['student_id']}_{p['parent_id']}", "G4")
+                    ET.SubElement(item, 'RELATION_ICODE').text = inherited_relation
+                    
+                    ET.SubElement(item, 'CUSTODIAL_INFO').text = 'JN'
+                    ET.SubElement(item, f'{{{NS_XSI}}}RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
+                    ET.SubElement(item, 'PG_ACCESS_IND').text = '2'
+                    ET.SubElement(item, 'LAST_UPDATED_DATE').text = '2026-06-30'
+                generated_xmls[f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}'] = root_custodial
+
+            # --- ROUTE 2: ISOLATED INDIVIDUAL CONVERSION MODES (READ RAW EXCEL DATA 100%) ---
+            elif detected_mode in ["PERSONAL", "PARENT", "CUSTODIAL", "SCHOOL", "MOVEMENT"]:
+                tag_row_map = {
+                    "PERSONAL": ("STUDENT_Personal_INFO", "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "STUDENT_BASIC_PERSONAL"),
+                    "PARENT": ("Student_Parent", "FULL_SFS_STUDENT_PARENT_MK", "STUDENT_PARENT"),
+                    "CUSTODIAL": ("custodial_info_mk", "FULL_SFS_STUDENT_CUSTODIAL_INFO_MK", "STUDENT_CUSTODIAL_INFO_MK"),
+                    "SCHOOL": ("STUDENT_School_INFO", "FULL_SFF_STUDENT_BASIC_SCHOOL_MK", "STUDENT_BASIC_SCHOOL"),
+                    "MOVEMENT": ("STUDENT_Movement_INFO", "FULL_SFS_MOVEMENT_MK", "MOVEMENT")
+                }
                 
-                for blank_tag in ['CONTACTADD_FLOOR_NO','CONTACTADD_UNIT_NO','CONTACTADD_BLDG_NAME','TELEPHONE_NO','HANDPHONE_NO','OTHER_CONTACT_NO','RES_TYPE_CODE','OFFICIALADD_BLK_HSE_NO','OFFICIALADD_STREET_NAME','OFFICIALADD_FLOOR_NO','OFFICIALADD_UNIT_NO','OFFICIALADD_BLDG_NAME','OFFICIALADD_POSTAL_ECODE','FOREIGNADD_LINE1_DESC','FOREIGNADD_LINE2_DESC','FOREIGNADD_POSTAL_ECODE','FOREIGNADD_COUNTRY_CODE','FOREIGNADD_CONTACTCODE_NO_OLD','FOREIGNADD_CONTACT_NO_OLD','FOREIGNADD_CONTACTCODE_NO','FOREIGNADD_CONTACT_NO','FOREIGNADD_COUNTRY_SGDRM_CODE','ADDRESS_IND','CONTACTADD_STREET_CODE','OFFICIALADD_STREET_CODE','GUARDIAN_TYPE_ICODE','PASS_TYPE_CODE','PASS_ISSUE_DATE','PASS_EXPIRY_DATE','RACE_REQUEST_DATE','PR_TYPE']:
-                    ET.SubElement(item, blank_tag).set(f"{{{NS_XSI}}}nil", "true")
-            generated_xmls[f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}'] = root_pers
-
-            # --- 3. FILE STUDENT PARENT XML ---
-            root_parent = ET.Element('INTERFACE', {'INTERFACE_NAME': 'Student_Parent', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_PARENT_MK_{current_time}.xml', 'NO_RECORD': str(len(paired_records))})
-            for pair in paired_records:
-                item = ET.SubElement(root_parent, 'STUDENT_PARENT')
-                ET.SubElement(item, 'RECORD_ID').text = '1'
-                ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = pair["student_id"]
-                ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = pair["parent_id"]
-                ET.SubElement(item, 'RELATION_ICODE').text = random.choice(relation_codes_list)
-                ET.SubElement(item, 'PARENT_GUARDIAN_NAME').text = f"Parent-Of-{pair['student_uin']}"
-                ET.SubElement(item, 'CITIZENSHIP_CODE').text = '10'
-                ET.SubElement(item, 'RACE_CODE').text = '2'
-                ET.SubElement(item, 'EMAIL_ADDRESS').text = f"parent_{pair['parent_id'].lower()}@yopmail.com"
+                intf_name, prefix_fn, row_tag = tag_row_map[detected_mode]
+                root_node = ET.Element('INTERFACE', {'INTERFACE_NAME': intf_name, 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'{prefix_fn}_{current_time}.xml', 'NO_RECORD': str(len(df_input))})
+                ET.register_namespace('xs', NS_XSI)
                 
-                for blank_tag in ['STANDARD_ATTENDED_CODE','DECEASED_YEAR','TELEPHONE_NO','HANDPHONE_NO','OTHER_CONTACT_NO','BIRTH_DATE','CITIZENSHIP_EFFECTIVE_DATE','CITIZENSHIP_SGDRM_CODE','PR_TYPE','NRIC_BLK_HSE_NO','NRIC_STREET_CODE','NRIC_FLOOR_NO','NRIC_UNIT_NO','NRIC_POSTAL_ECODE']:
-                    ET.SubElement(item, blank_tag).set(f"{{{NS_XSI}}}nil", "true")
-            generated_xmls[f'FULL_SFS_STUDENT_PARENT_MK_{current_time}'] = root_parent
+                for _, row in df_input.iterrows():
+                    item = ET.SubElement(root_node, row_tag)
+                    for col in TEMPLATE_COLUMNS[detected_mode]:
+                        val = row.get(col, "").strip()
+                        
+                        if col in ["UNIQUE_ID", "STUDENT_UNIQUE_ID", "PARENT_UNIQUE_ID"] and val:
+                            ET.SubElement(item, col, {'UNIQUE_ID': 'Y'} if col=="STUDENT_UNIQUE_ID" else {}).text = val
+                        elif val:
+                            ET.SubElement(item, col).text = val
+                        else:
+                            ET.SubElement(item, col).set(f"{{{NS_XSI}}}nil", "true")
+                            
+                generated_xmls[f'{prefix_fn}_{current_time}'] = root_node
+            else:
+                st.error("❌ **Structure Error:** Unknown Excel template headers. Please check the sample templates above.")
+                return
 
-            # --- 4. FILE STUDENT CUSTODIAL XML ---
-            root_custodial = ET.Element('INTERFACE', {'INTERFACE_NAME': 'custodial_info_mk', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}.xml', 'NO_RECORD': str(len(paired_records))})
-            for idx, pair in enumerate(paired_records, start=1):
-                item = ET.SubElement(root_custodial, 'STUDENT_CUSTODIAL_INFO_MK')
-                ET.SubElement(item, 'RECORD_ID').text = str(idx)
-                ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = pair["student_id"]
-                ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = pair["parent_id"]
-                ET.SubElement(item, 'RELATION_ICODE').text = 'G4'
-                ET.SubElement(item, 'CUSTODIAL_INFO').text = 'JN'
-                ET.SubElement(item, 'RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
-                ET.SubElement(item, 'PG_ACCESS_IND').text = '2'
-                ET.SubElement(item, 'LAST_UPDATED_DATE').text = '2026-06-30'
-            generated_xmls[f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}'] = root_custodial
-
-            # Pack output ZIP bundles
+            # Pack output structures into ZIP blocks
             success_count = 0
             total_rows = 0
             for prefix_name, xml_node in generated_xmls.items():
@@ -516,14 +536,13 @@ if uploaded_mapping_file:
                 st.session_state.pipeline_download_queue.append({
                     "zip_name": f"{prefix_name}.zip",
                     "zip_data": zip_buf.getvalue(),
-                    "records": int(xml_node.get("NO_RECORD")),
-                    "source_name": uploaded_mapping_file.name
+                    "records": int(xml_node.get("NO_RECORD"))
                 })
                 success_count += 1
                 total_rows += int(xml_node.get("NO_RECORD"))
                 
             st.session_state.run_summary = {"success_count": success_count, "total_records": total_rows}
-            st.toast("⚡ Auto-generation complete! All 4 bundles built successfully without prefixes.", icon="🚀")
+            st.toast("⚡ Conversion complete! Structural payloads successfully rendered.", icon="🚀")
         except Exception as e:
             st.error(f"❌ **Pipeline Failure:** {e}")
 
