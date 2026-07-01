@@ -440,8 +440,6 @@ with tab_mock_generator:
     # --- ENGLISH QUICK GUIDE FOR CONVERSION & TESTING ---
     with st.expander("📖 Quick Guide & Usage Instructions (English)", expanded=True):
         st.markdown("""
-        ### 💡 How to use this Mock Data for E2E Testing:
-        
         1. **Performance & Stress Testing (Section 1):**
            - Click **"Start Generating (900K)"** to compile a heavy dataset containing 900,000 sequential `CUSTODIAL` records.
            - The system streams data directly into a compressed `.zip` package to keep RAM footprint low.
