@@ -539,7 +539,7 @@ if uploaded_any_file:
                     ET.SubElement(item, 'RELATION_ICODE').text = inherited_relation
                     
                     ET.SubElement(item, 'CUSTODIAL_INFO').text = 'JN'
-                    ET.SubElement(item, f'{{{NS_XSI}}}RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
+                    ET.SubElement(item, 'RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
                     ET.SubElement(item, 'PG_ACCESS_IND').text = '2'
                     ET.SubElement(item, 'LAST_UPDATED_DATE').text = '2026-06-30'
                 generated_xmls[f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}'] = root_custodial
