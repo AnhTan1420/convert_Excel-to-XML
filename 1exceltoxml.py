@@ -48,11 +48,6 @@ with tab_forward:
     # --- SHORT & CLEAR GUIDE ---
     with st.expander("📖 Quick Guide & Download Rules", expanded=True):
         st.markdown("""
-        ### 🚀 How to Use:
-        1. **Upload** your master Excel workbook (`.xlsx`).
-        2. **Click Convert** to process the data.
-        3. **Download** the output files based on the rules below.
-
         ### ⚠️ File Generation & Download Rules:
         * 🔑 **When uploading `ID_MAPPING`:**
           * The system automatically generates and packs **4 structural ZIP files** at once.
