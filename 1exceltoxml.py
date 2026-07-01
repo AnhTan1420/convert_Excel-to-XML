@@ -133,7 +133,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student & Parent)", expand
             
             ET.SubElement(item, 'STUDENT_UIN_FIN_NO').text = uin_val
             ET.SubElement(item, f'{{{NS_XSI}}}PARENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
-            ET.SubElement(item, f'{{{NS_XSI}}}STUDENT_UINFIN_TYPE_ICODE').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, f'{{{NS_XSI}}}STUDENT_UINFIN_TYPE_ICODE').text = '1'
             ET.SubElement(item, f'{{{NS_XSI}}}PREV_NRIC_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
             
         sync_files[f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.zip'] = (f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.xml', root_map)
