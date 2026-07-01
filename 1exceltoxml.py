@@ -282,7 +282,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
             pd.DataFrame(rows_parent_xlsx).to_excel(writer, sheet_name="STUDENT_PARENT", index=False)
             pd.DataFrame(rows_custodial_xlsx).to_excel(writer, sheet_name="STUDENT_CUSTODIAL", index=False)
         st.session_state["sync_xlsx_data"] = xlsx_buffer.getvalue()
-        st.session_state["sync_xlsx_name"] = f"SYNC_SYSTEM_SAMPLE_DATA_{current_timestamp}.xlsx"
+        st.session_state["sync_xlsx_name"] = f"SAMPLE_DATA_ID_MAPPING{current_timestamp}.xlsx"
 
         st.session_state["sync_download_queue"] = []
         for zip_name, (xml_name, xml_node) in sync_files.items():
