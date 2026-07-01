@@ -434,7 +434,7 @@ with tab_backward:
         
         for s_name, df_p in st.session_state["extracted_summary"].items():
             with st.expander(f"📋 Sheet: {s_name} ({len(df_p)} Rows Detected)", expanded=True):
-                st.dataframe(df_p.head(10), use_container_width=True)
+                st.dataframe(df_p, use_container_width=True)
                 
         st.download_button(
             label=f"📥 DOWNLOAD EXTRACTED EXCEL WORKBOOK ({st.session_state['extracted_xlsx_name']})",
