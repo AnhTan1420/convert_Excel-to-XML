@@ -604,7 +604,7 @@ with tab_forward:
 # ==========================================
 with tab_backward:
     st.subheader("🔄 Reverse Parser Engine (ZIP/XML ➡️ Excel)")
-    st.write("Upload a `.zip` pack containing target payload system XML file(s). The engine will parse fields and name each worksheet directly after its corresponding XML filename.")
+    st.write("Upload a `.zip` pack containing target payload system XML file(s). The engine will parse fields and synchronize the output Excel filename with your uploaded ZIP name.")
 
     uploaded_zip_file = st.file_uploader("Upload target system ZIP file:", type=["zip"], accept_multiple_files=False, key="backward_uploader")
 
@@ -613,6 +613,11 @@ with tab_backward:
         
         if st.button("🏁 Run Reverse Extraction Pipeline", type="primary", use_container_width=True):
             try:
+                # 1. Xác định tên file ZIP đầu vào để đồng bộ hóa tên file Excel xuất ra
+                zip_filename_raw = uploaded_zip_file.name
+                # Loại bỏ đuôi .zip để lấy tên gốc (Ví dụ: "FULL_SFS_ID_MAPPING_MK_2026...")
+                base_excel_name = zip_filename_raw.rsplit(".", 1)[0]
+                
                 # Read loaded ZIP stream out of RAM
                 zip_in_mem = zipfile.ZipFile(io.BytesIO(uploaded_zip_file.read()))
                 parsed_sheets = {} # Accumulate worksheets matching data types
@@ -649,11 +654,9 @@ with tab_backward:
                         if records_list:
                             df_sheet = pd.DataFrame(records_list)
                             
-                            # Extract worksheet name directly from the file name (removing path and extension)
-                            base_filename = file_inside.split("/")[-1] # Remove directories if nested
-                            sheet_clean_name = base_filename.rsplit(".", 1)[0] # Strip .xml extension
-                            
-                            # Excel worksheet name limit is 31 characters max
+                            # Tên Sheet bên trong vẫn lấy theo tên file XML tương ứng
+                            base_xml_name = file_inside.split("/")[-1]
+                            sheet_clean_name = base_xml_name.rsplit(".", 1)[0]
                             if len(sheet_clean_name) > 31:
                                 sheet_clean_name = sheet_clean_name[:31]
                             
@@ -666,11 +669,11 @@ with tab_backward:
                         for sheet_name, df_data in parsed_sheets.items():
                             df_data.to_excel(writer, sheet_name=sheet_name, index=False)
                     
+                    # 2. Lưu data và gán tên file Excel đồng bộ hoàn toàn với file ZIP đầu vào
                     st.session_state["extracted_xlsx_data"] = out_xlsx_buffer.getvalue()
-                    ts = time.strftime('%Y%m%d%H%M%S')
-                    st.session_state["extracted_xlsx_name"] = f"EXTRACTED_MASTER_DATA_{ts}.xlsx"
+                    st.session_state["extracted_xlsx_name"] = f"{base_excel_name}.xlsx"
                     st.session_state["extracted_summary"] = parsed_sheets
-                    st.success("🎉 Extraction pipeline executed with 100% data fidelity.")
+                    st.success(f"🎉 Extraction pipeline executed with 100% data fidelity. Target name: `{st.session_state['extracted_xlsx_name']}`")
                 else:
                     st.error("⚠️ No valid XML files detected inside the uploaded ZIP archive.")
             except Exception as ex:
@@ -686,7 +689,7 @@ with tab_backward:
                 st.dataframe(df_p.head(5), use_container_width=True)
                 
         st.download_button(
-            label="📥 DOWNLOAD EXTRACTED EXCEL WORKBOOK (.XLSX)",
+            label=f"📥 DOWNLOAD EXTRACTED EXCEL WORKBOOK ({st.session_state['extracted_xlsx_name']})",
             data=st.session_state["extracted_xlsx_data"],
             file_name=st.session_state["extracted_xlsx_name"],
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
