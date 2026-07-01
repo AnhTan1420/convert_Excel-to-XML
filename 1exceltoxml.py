@@ -334,7 +334,7 @@ with tab_forward:
 
     # --- SECTION 3: WORKBOOK SOURCE CONVERSION ENGINE (SMART AUTO-ROUTER LOGIC) ---
     st.markdown("---")
-    st.subheader("⚙️ Automated Smart Converter Engine")
+    st.subheader("⚙️ Convert (Excel ➡️ ZIP/XML)")
 
     # Khởi tạo các trạng thái ban đầu trong session_state nếu chưa có
     if "pipeline_download_queue" not in st.session_state:
@@ -377,7 +377,7 @@ with tab_forward:
     if uploaded_any_file:
         st.info(f"📋 **Stage Queue:** `{uploaded_any_file.name}` loaded into session memory.")
         
-        if st.button("🚀 Execute Smart Conversion", type="primary", use_container_width=True):
+        if st.button("🚀 Execute Conversion", type="primary", use_container_width=True):
             # Reset lại queue trước khi build data mới
             st.session_state.pipeline_download_queue = []
             current_time = time.strftime('%Y%m%d%H%M%S')
@@ -617,7 +617,7 @@ with tab_forward:
 # --- TAB 2: REVERSE ENGINE (ZIP -> XLSX) ---
 # ==========================================
 with tab_backward:
-    st.subheader("🔄 Reverse Parser Engine (ZIP/XML ➡️ Excel)")
+    st.subheader("🔄 Reverse (ZIP/XML ➡️ Excel)")
     st.write("Upload a `.zip` pack containing target payload system XML file(s). The engine will parse fields and synchronize the output Excel filename with your uploaded ZIP name.")
 
     uploaded_zip_file = st.file_uploader("Upload target system ZIP file:", type=["zip"], accept_multiple_files=False, key="backward_uploader")
