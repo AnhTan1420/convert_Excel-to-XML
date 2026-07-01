@@ -604,7 +604,7 @@ with tab_forward:
 # ==========================================
 with tab_backward:
     st.subheader("🔄 Reverse Parser Engine (ZIP/XML ➡️ Excel)")
-    st.write("Upload a `.zip` pack containing target payload system XML file(s). The engine will smart-parse fields and export a clean consolidated Excel Workbook.")
+    st.write("Upload a `.zip` pack containing target payload system XML file(s). The engine will parse fields and name each worksheet directly after its corresponding XML filename.")
 
     uploaded_zip_file = st.file_uploader("Upload target system ZIP file:", type=["zip"], accept_multiple_files=False, key="backward_uploader")
 
@@ -622,9 +622,6 @@ with tab_backward:
                     if file_inside.lower().endswith(".xml"):
                         xml_bytes = zip_in_mem.read(file_inside)
                         root = ET.fromstring(xml_bytes)
-                        
-                        # Route layouts utilizing interface headers attributes
-                        interface_name = root.attrib.get("INTERFACE_NAME", "UNKNOWN_INTERFACE")
                         
                         # Collate row objects sequentially
                         records_list = []
@@ -652,15 +649,13 @@ with tab_backward:
                         if records_list:
                             df_sheet = pd.DataFrame(records_list)
                             
-                            # Clean routing labels designations parameters
-                            sheet_clean_name = "DATA_EXPORT"
-                            if "mapping" in interface_name.lower(): sheet_clean_name = "ID_MAPPING"
-                            elif "personal" in interface_name.lower(): sheet_clean_name = "BASIC_PERSONAL"
-                            elif "parent" in interface_name.lower(): sheet_clean_name = "STUDENT_PARENT"
-                            elif "custodial" in interface_name.lower(): sheet_clean_name = "STUDENT_CUSTODIAL"
-                            elif "school" in interface_name.lower(): sheet_clean_name = "BASIC_SCHOOL"
-                            elif "movement" in interface_name.lower(): sheet_clean_name = "MOVEMENT"
-                            else: sheet_clean_name = interface_name[:30] # Limit worksheet names below 31 char max boundary
+                            # Extract worksheet name directly from the file name (removing path and extension)
+                            base_filename = file_inside.split("/")[-1] # Remove directories if nested
+                            sheet_clean_name = base_filename.rsplit(".", 1)[0] # Strip .xml extension
+                            
+                            # Excel worksheet name limit is 31 characters max
+                            if len(sheet_clean_name) > 31:
+                                sheet_clean_name = sheet_clean_name[:31]
                             
                             parsed_sheets[sheet_clean_name] = df_sheet
 
@@ -677,7 +672,7 @@ with tab_backward:
                     st.session_state["extracted_summary"] = parsed_sheets
                     st.success("🎉 Extraction pipeline executed with 100% data fidelity.")
                 else:
-                    st.error("⚠️ No valid structural layout components or XML files detected inside the uploaded ZIP archive.")
+                    st.error("⚠️ No valid XML files detected inside the uploaded ZIP archive.")
             except Exception as ex:
                 st.error(f"❌ **Reverse Pipeline Error:** {ex}")
 
