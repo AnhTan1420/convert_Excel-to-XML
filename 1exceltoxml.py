@@ -516,7 +516,7 @@ if uploaded_any_file:
                 generated_xmls[f'{prefix_fn}_{current_time}'] = root_node
             else:
                 st.error("❌ **Structure Error:** Unknown Excel template headers. Please check the sample templates above.")
-                return
+                st.stop()
 
             # Pack output structures into ZIP blocks
             success_count = 0
