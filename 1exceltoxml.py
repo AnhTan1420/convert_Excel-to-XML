@@ -427,8 +427,30 @@ with tab_backward:
 # ==========================================
 with tab_mock_generator:
     st.subheader("🛠️ Mock Test Data Suite")
-    st.write("Generate bulk or synchronized sample datasets natively to run functional verification or performance stress test pipelines.")
 
+    # --- ENGLISH QUICK GUIDE FOR CONVERSION & TESTING ---
+    with st.expander("📖 Quick Guide & Usage Instructions (English)", expanded=True):
+        st.markdown("""
+        ### 💡 How to use this Mock Data for E2E Testing:
+        
+        1. **Performance & Stress Testing (Section 1):**
+           - Click **"Start Generating (900K)"** to compile a heavy dataset containing 900,000 sequential `CUSTODIAL` records.
+           - The system streams data directly into a compressed `.zip` package to keep RAM footprint low.
+           - Once completed, download the ZIP archive and feed it into your downstream batch processor to verify system throughput.
+        
+        2. **Data Synchronization (Section 2):**
+           - Click **"Start Generating Sample Data Records"** to generate sample data.
+           - **The Sync Mechanism:** The generator automatically maps unique `STUDENT_UNIQUE_ID` and `PARENT_UNIQUE_ID` tokens across **4 distinct structural layers**:
+             - 📂 **`ID_MAPPING`**: Connects generated UIN/FIN identifiers.
+             - 📂 **`BASIC_PERSONAL`**: Contains randomized personal profiles, contact channels, and addresses.
+             - 📂 **`STUDENT_PARENT`**: Handles parent links and metadata.
+             - 📂 **`STUDENT_CUSTODIAL`**: Sets custodial flags while dynamically inheriting relationships (`RELATION_ICODE`) established in the parent module.
+           - **Download Formats:**
+             - Use the **🟢 Master Excel Workbook (.xlsx)** to manually review or audit the raw generated values side-by-side.
+             - Use the individual **Target XML Bundles (ZIPs)** to perform direct integration uploads into your staging server environments.
+        """)
+
+    st.write("Generate bulk or synchronized sample datasets natively to run functional verification or performance stress test pipelines.")
     # --- SECTION 1: LARGE DATASET GENERATION (900K RECORDS) ---
     with st.expander("🚀 Generate Large Dataset (900K Records - Stress Test)", expanded=False):
         st.write("Automatically generate `CUSTODIAL` structure data sequentially from 1 to 900,000 and compress it directly into a ZIP file to optimize memory usage.")
