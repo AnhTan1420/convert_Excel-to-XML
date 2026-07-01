@@ -9,6 +9,13 @@ import random
 # App Workspace Configuration
 st.set_page_config(page_title="MOE Jordan Engine", page_icon="⚙️", layout="centered")
 st.title("MOE: EXCEL ⇄ ZIP/XML Conversion")
+    # --- HEADER CREDIT (Đã chuyển lên đây) ---
+st.markdown(
+        "<div style='text-align: right; color: #888888; font-size: 0.85em; margin-top: -20px; margin-bottom: 15px;'>"
+        "🛠️ Built by <b>Jordan Le</b>"
+        "</div>", 
+        unsafe_allow_html=True
+    )
 
 # Reusable Data Pools for Mock Generation
 months_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
@@ -45,13 +52,7 @@ tab_forward, tab_backward, tab_mock_generator = st.tabs([
 with tab_forward:
     # --- SECTION 3: WORKBOOK SOURCE CONVERSION ENGINE (SMART AUTO-ROUTER LOGIC) ---
     st.subheader("Convert (Excel ➡️ ZIP/XML)")
-    # --- HEADER CREDIT (Đã chuyển lên đây) ---
-    st.markdown(
-        "<div style='text-align: right; color: #888888; font-size: 0.85em; margin-top: -20px; margin-bottom: 15px;'>"
-        "🛠️ Built by <b>Jordan Le</b>"
-        "</div>", 
-        unsafe_allow_html=True
-    )
+
     # --- SHORT & CLEAR GUIDE ---
     with st.expander("📖 Quick Guide & Download Rules", expanded=True):
         st.markdown("""
