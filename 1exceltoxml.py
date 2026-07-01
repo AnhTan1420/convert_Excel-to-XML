@@ -426,7 +426,7 @@ with tab_backward:
 # --- TAB 3: MOCK DATA GENERATOR ---
 # ==========================================
 with tab_mock_generator:
-    st.subheader("🛠️ Mock Test Data Suite (UAT Support)")
+    st.subheader("🛠️ Mock Test Data Suite")
     st.write("Generate bulk or synchronized sample datasets natively to run functional verification or performance stress test pipelines.")
 
     # --- SECTION 1: LARGE DATASET GENERATION (900K RECORDS) ---
