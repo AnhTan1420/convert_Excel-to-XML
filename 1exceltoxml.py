@@ -120,10 +120,10 @@ with st.expander("✨ Generate Random 5 Sync Records (Student & Parent)", expand
             uin_val = random_uin()
             mapped_parent_uins[p_id] = uin_val 
             
-            ET.SubElement(item, f'{{{NS_XSI}}}STUDENT_UIN_FIN_N').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, 'STUDENT_UIN_FIN_N').set(f"{{{NS_XSI}}}nil", "true")
             ET.SubElement(item, 'PARENT_UIN_FIN_NO').text = uin_val
-            ET.SubElement(item, f'{{{NS_XSI}}}STUDENT_UINFIN_TYPE_ICODE').set(f"{{{NS_XSI}}}nil", "true")
-            ET.SubElement(item, f'{{{NS_XSI}}}PREV_NRIC_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, 'STUDENT_UINFIN_TYPE_ICODE').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, 'PREV_NRIC_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
             
         # Map primary students to unique validation elements
         for s_id in student_ids:
@@ -132,9 +132,9 @@ with st.expander("✨ Generate Random 5 Sync Records (Student & Parent)", expand
             mapped_student_uins[s_id] = uin_val 
             
             ET.SubElement(item, 'STUDENT_UIN_FIN_NO').text = uin_val
-            ET.SubElement(item, f'{{{NS_XSI}}}PARENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, 'PARENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
             ET.SubElement(item, 'STUDENT_UINFIN_TYPE_ICODE').text = '1'
-            ET.SubElement(item, f'{{{NS_XSI}}}PREV_NRIC_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, 'PREV_NRIC_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
             
         sync_files[f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.zip'] = (f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.xml', root_map)
 
@@ -147,7 +147,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student & Parent)", expand
             
             # Synchronization mapping binding
             uin_from_mapping = mapped_student_uins.get(s_id, "UNKNOWN")
-            ET.SubElement(item, 'STUDENT_NAME').text = f"RANDOM-NAME-{uin_from_mapping}"
+            ET.SubElement(item, 'STUDENT_NAME').text = f"student-{uin_from_mapping}"
             
             ET.SubElement(item, 'HANYU_PINYIN_NAME').text = 'HANYUPINYIN'
             ET.SubElement(item, 'BIRTH_DATE').text = f"{random.randint(10,28)}-JAN-{random.randint(2001,2008)}"
@@ -157,7 +157,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student & Parent)", expand
             ET.SubElement(item, 'RELIGION_CODE').text = '9'
             ET.SubElement(item, 'RELIGION_SGDRM_CODE').text = 'F'
             ET.SubElement(item, 'SEX_CODE').text = random.choice(['M', 'F'])
-            ET.SubElement(item, f'{{{NS_XSI}}}EMAIL_ADDRESS').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, 'EMAIL_ADDRESS').text = f"student_{uin_from_mapping.lower()}@yopmail.com"
             
             ET.SubElement(item, 'CITIZENSHIP_EFFECTIVE_DATE').text = f"{random.randint(10, 28)}-{random.choice(months_list)}-{random.randint(2000, 2025)}"
             ET.SubElement(item, 'CONTACT_SAMEAS_OFFICIAL_IND').text = 'Y'
@@ -240,7 +240,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student & Parent)", expand
             ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p_id
             ET.SubElement(item, 'RELATION_ICODE').text = 'G4'
             ET.SubElement(item, 'CUSTODIAL_INFO').text = 'JN'
-            ET.SubElement(item, f'{{{NS_XSI}}}RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, 'RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
             ET.SubElement(item, 'PG_ACCESS_IND').text = '2'
             ET.SubElement(item, 'LAST_UPDATED_DATE').text = '2026-06-30'
         sync_files[f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_timestamp}.zip'] = (f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_timestamp}.xml', root_custodial)
