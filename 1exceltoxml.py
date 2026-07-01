@@ -11,37 +11,35 @@ st.set_page_config(page_title="MOE Jordan", page_icon="⚙️", layout="centered
 
 st.title("MOE: Convert XLSX/CSV to XML and compress to ZIP")
 
-# --- 1. KHU VỰC 1: SINH 900.000 DÒNG DỮ LIỆU LỚN ---
+# --- SECTION 1: LARGE DATASET GENERATION (900K RECORDS) ---
 st.markdown("---")
 with st.expander("Generate 900K Records", expanded=False):
-    st.write("Automatically generate `CUSTODIAL` structure data sequentially from 1 to 900,000 and compress it directly into a ZIP file to optimize memory.")
+    st.write("Automatically generate `CUSTODIAL` structure data sequentially from 1 to 900,000 and compress it directly into a ZIP file to optimize memory usage.")
     
-    # Sử dụng nút bấm kiểm soát trạng thái sinh file
-    if st.button("Bắt đầu tạo (900K)", type="secondary", use_container_width=True):
+    # State control for heavy generation
+    if st.button("Start Generating (900K)", type="secondary", use_container_width=True):
         progress_bar = st.progress(0)
         status_text = st.empty()
         
-        status_text.text("⏳ Đang khởi tạo luồng nén dữ liệu...")
+        status_text.text("⏳ Initializing compression stream...")
         current_time = time.strftime('%Y%m%d%H%M%S')
         xml_filename = f"FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}.xml"
         zip_filename = f"FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}.zip"
         
-        # Định nghĩa cấu phần cố định
+        # Fixed Schema Definitions
         NS_XSI = "http://www.w3.org/2001/XMLSchema-instance"
         total_records = 900000
         
-        # Tạo bộ đệm lưu file ZIP trực tiếp
+        # Output buffer to process zip directly in RAM
         zip_buffer = io.BytesIO()
         
         with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
-            # Khởi tạo nội dung XML theo dạng chuỗi để tăng tốc tối đa
+            # Initialize XML content stream using string builder for maximum processing speed
             header = f"<?xml version='1.0' encoding='UTF-8'?>\n<INTERFACE xmlns:xs=\"{NS_XSI}\" INTERFACE_NAME=\"custodial_info_mk\" FILE_CREATED_TIME=\"{str(int(time.time() * 1000))}\" FILE_NAME=\"{xml_filename}\" NO_RECORD=\"{total_records}\">\n"
             
-            # Ghi phần mở đầu vào một file ảo trong ZIP
             xml_chunks = [header]
-            
-            # Chia nhỏ vòng lặp để cập nhật UI Streamlit không bị đóng băng
             chunk_size = 100000
+            
             for i in range(1, total_records + 1):
                 row_str = (
                     f"  <STUDENT_CUSTODIAL_INFO_MK>\n"
@@ -57,49 +55,48 @@ with st.expander("Generate 900K Records", expanded=False):
                 )
                 xml_chunks.append(row_str)
                 
-                # Cứ sau 100k bản ghi thì giải phóng bộ nhớ lưu vào zip nháp
+                # Stream out memory blocks periodically to update UI and keep execution footprint low
                 if i % chunk_size == 0:
-                    status_text.text(f"⏳ Đang xử lý khối dữ liệu: {i:,} / {total_records:,} bản ghi...")
+                    status_text.text(f"⏳ Processing data blocks: {i:,} / {total_records:,} records...")
                     progress_bar.progress(i / total_records)
             
             xml_chunks.append("</INTERFACE>")
             
-            # Gom tất cả lại và đưa vào cấu trúc file nén
+            # Combine all chunks and inject into the archive file
             full_xml_string = "".join(xml_chunks)
             zipf.writestr(xml_filename, full_xml_string.encode('utf-8'))
             
-        status_text.text("🎉 Tạo file hoàn tất! Sẵn sàng tải xuống.")
+        status_text.text("🎉 Generation completed successfully! Package ready for download.")
         progress_bar.empty()
         
-        # Lưu vào session để hiển thị nút download cố định
+        # Save payload to session state to maintain download stability
         st.session_state["large_zip_data"] = zip_buffer.getvalue()
         st.session_state["large_zip_name"] = zip_filename
 
-    # Hiển thị nút tải file xuống nếu dữ liệu đã được build xong trong phiên làm việc
+    # Render download button persistent layout
     if "large_zip_data" in st.session_state:
-        st.success(f"📦 Đã tạo xong file: `{st.session_state['large_zip_name']}`")
+        st.success(f"📦 Archive compiled: `{st.session_state['large_zip_name']}`")
         st.download_button(
-            label="📥 BẤM VÀO ĐỂ TẢI FILE ZIP (900K DATA)",
+            label="📥 CLICK HERE TO DOWNLOAD ZIP FILE (900K DATA)",
             data=st.session_state["large_zip_data"],
             file_name=st.session_state["large_zip_name"],
             mime="application/zip",
             use_container_width=True
         )
 
-# --- 2. KHU VỰC THÊM MỚI: GENERATE RANDOM 5 SYNC RECORDS (4 TABLES) ---
+# --- SECTION 2: SYNCHRONIZED TARGET PAIRS GENERATION (3 TABLES) ---
 st.markdown("---")
-with st.expander("✨ Generate Random 5 Sync Records (4 Tables)", expanded=False):
-    st.write("Randomly generate synchronized datasets for 5 students across all 4 files: ID Mapping, Basic Personal, Student Parent, and Custodial Info.")
+with st.expander("✨ Generate Random 5 Sync Records (Student & Parent)", expanded=False):
+    st.write("Randomly generate synchronized datasets for 5 students across 3 structural target files: ID Mapping, Basic Personal, and Student Parent.")
     
     if st.button("Start Generating 5 Sample Data Records", type="primary", use_container_width=True):
         current_timestamp = time.strftime('%Y%m%d%H%M%S')
         epoch_ms = str(int(time.time() * 1000))
         NS_XSI = "http://www.w3.org/2001/XMLSchema-instance"
         
-        # 1. Create synchronized mock IDs
+        # Initialize 5 unified pairs
         student_ids = [f"JDK-{i}" for i in range(101, 106)]
         parent_ids = [f"JDKRP-{i}" for i in range(101, 106)]
-        dif_student_ids = [f"JDK-{i}-DIF" for i in range(101, 106)]
         
         def random_uin():
             prefix = random.choice(['S', 'T', 'G', 'F', 'M'])
@@ -108,40 +105,30 @@ with st.expander("✨ Generate Random 5 Sync Records (4 Tables)", expanded=False
             return f"{prefix}{digits}{suffix}"
             
         sync_files = {}
-        
-        # SỬA LỖI NAMEERROR: Khởi tạo từ điển lưu trữ đồng bộ UIN trước khi sử dụng trong vòng lặp
         mapped_student_uins = {}
         months_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
         relation_codes_list = ['9', 'F', '5', 'M', 'G2', 'G', 'G4', 'G3']
 
-        # --- 2.1 ID MAPPING ---
-        root_map = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_ID_Mapping_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.xml', 'NO_RECORD': '15'})
+        # --- 2.1 ID MAPPING (5 Parents + 5 Students = 10 Records Total) ---
+        root_map = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_ID_Mapping_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.xml', 'NO_RECORD': '10'})
         ET.register_namespace('xs', NS_XSI)
         
-        for p_id, s_id in zip(parent_ids, student_ids):
+        # Map parents to unique validation elements
+        for p_id in parent_ids:
             item = ET.SubElement(root_map, 'ID_Mapping', {'UNIQUE_ID': p_id})
             uin_val = random_uin()
-            mapped_student_uins[p_id] = uin_val # Lưu lại UIN cho Parent IDs
+            mapped_parent_uins[p_id] = uin_val 
             
-            ET.SubElement(item, 'STUDENT_UIN_FIN_NO').text = uin_val
-            ET.SubElement(item, 'PARENT_UIN_FIN_NO').text = random_uin()
+            ET.SubElement(item, f'{{{NS_XSI}}}STUDENT_UIN_FIN_N').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, 'PARENT_UIN_FIN_NO').text = uin_val
             ET.SubElement(item, f'{{{NS_XSI}}}STUDENT_UINFIN_TYPE_ICODE').set(f"{{{NS_XSI}}}nil", "true")
             ET.SubElement(item, f'{{{NS_XSI}}}PREV_NRIC_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
             
+        # Map primary students to unique validation elements
         for s_id in student_ids:
             item = ET.SubElement(root_map, 'ID_Mapping', {'UNIQUE_ID': s_id})
             uin_val = random_uin()
-            mapped_student_uins[s_id] = uin_val # Lưu lại UIN của Student ID chính thức
-            
-            ET.SubElement(item, 'STUDENT_UIN_FIN_NO').text = uin_val
-            ET.SubElement(item, f'{{{NS_XSI}}}PARENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
-            ET.SubElement(item, f'{{{NS_XSI}}}STUDENT_UINFIN_TYPE_ICODE').set(f"{{{NS_XSI}}}nil", "true")
-            ET.SubElement(item, f'{{{NS_XSI}}}PREV_NRIC_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
-            
-        for d_id in dif_student_ids:
-            item = ET.SubElement(root_map, 'ID_Mapping', {'UNIQUE_ID': d_id})
-            uin_val = random_uin()
-            mapped_student_uins[d_id] = uin_val # Lưu lại UIN của DIF Student ID
+            mapped_student_uins[s_id] = uin_val 
             
             ET.SubElement(item, 'STUDENT_UIN_FIN_NO').text = uin_val
             ET.SubElement(item, f'{{{NS_XSI}}}PARENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
@@ -150,14 +137,14 @@ with st.expander("✨ Generate Random 5 Sync Records (4 Tables)", expanded=False
             
         sync_files[f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.zip'] = (f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.xml', root_map)
 
-        # --- 2.2 BASIC PERSONAL ---
-        root_pers = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_Personal_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_timestamp}.xml', 'NO_RECORD': '10'})
-        for s_id in (student_ids + dif_student_ids):
+        # --- 2.2 BASIC PERSONAL - STUDENT ATTRIBUTES (5 Records) ---
+        root_pers = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_Personal_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_timestamp}.xml', 'NO_RECORD': '5'})
+        for s_id in student_ids:
             item = ET.SubElement(root_pers, 'STUDENT_BASIC_PERSONAL')
             ET.SubElement(item, 'RECORD_ID').text = '1'
             ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = s_id
             
-            # ĐỒNG BỘ: Lấy mã UIN sinh ra từ ID Mapping gán vào STUDENT_NAME
+            # Synchronization mapping binding
             uin_from_mapping = mapped_student_uins.get(s_id, "UNKNOWN")
             ET.SubElement(item, 'STUDENT_NAME').text = f"RANDOM-NAME-{uin_from_mapping}"
             
@@ -171,9 +158,7 @@ with st.expander("✨ Generate Random 5 Sync Records (4 Tables)", expanded=False
             ET.SubElement(item, 'SEX_CODE').text = random.choice(['M', 'F'])
             ET.SubElement(item, f'{{{NS_XSI}}}EMAIL_ADDRESS').set(f"{{{NS_XSI}}}nil", "true")
             
-            # RANDOM FIELD: CITIZENSHIP_EFFECTIVE_DATE theo dạng DD-MMM-YYYY
             ET.SubElement(item, 'CITIZENSHIP_EFFECTIVE_DATE').text = f"{random.randint(10, 28)}-{random.choice(months_list)}-{random.randint(2000, 2025)}"
-            
             ET.SubElement(item, 'CONTACT_SAMEAS_OFFICIAL_IND').text = 'Y'
             ET.SubElement(item, 'CONTACTADD_BLK_HSE_NO').text = '123'
             ET.SubElement(item, 'CONTACTADD_STREET_NAME').text = 'Random Street'
@@ -211,7 +196,7 @@ with st.expander("✨ Generate Random 5 Sync Records (4 Tables)", expanded=False
             ET.SubElement(item, 'PR_TYPE').text = 'N'
         sync_files[f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_timestamp}.zip'] = (f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_timestamp}.xml', root_pers)
 
-        # --- 2.3 STUDENT PARENT ---
+        # --- 2.3 STUDENT PARENT - PARENT ATTRIBUTES (5 Records) ---
         root_parent = ET.Element('INTERFACE', {'INTERFACE_NAME': 'Student_Parent', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_PARENT_MK_{current_timestamp}.xml', 'NO_RECORD': '5'})
         for s_id, p_id in zip(student_ids, parent_ids):
             item = ET.SubElement(root_parent, 'STUDENT_PARENT')
@@ -219,10 +204,9 @@ with st.expander("✨ Generate Random 5 Sync Records (4 Tables)", expanded=False
             ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = s_id
             ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p_id
             
-            # RANDOM FIELD: RELATION_ICODE chọn ngẫu nhiên từ danh sách yêu cầu
             ET.SubElement(item, 'RELATION_ICODE').text = random.choice(relation_codes_list)
             
-            # ĐỒNG BỘ STUDENT PARENT: Sử dụng mã UIN của Student tương ứng để tạo tên Parent
+            # Cross-referenced child identification linking
             uin_from_mapping = mapped_student_uins.get(s_id, "UNKNOWN")
             ET.SubElement(item, 'PARENT_GUARDIAN_NAME').text = f"Parent-Of-{uin_from_mapping}"
             
@@ -236,9 +220,7 @@ with st.expander("✨ Generate Random 5 Sync Records (4 Tables)", expanded=False
             ET.SubElement(item, 'BIRTH_DATE').text = '26-JUN-2001'
             ET.SubElement(item, 'EMAIL_ADDRESS').text = f"parent_{uin_from_mapping.lower()}@yopmail.com"
             
-            # RANDOM FIELD: CITIZENSHIP_EFFECTIVE_DATE theo dạng DD-MMM-YYYY cho phụ huynh
             ET.SubElement(item, 'CITIZENSHIP_EFFECTIVE_DATE').text = f"{random.randint(10, 28)}-{random.choice(months_list)}-{random.randint(1980, 2010)}"
-            
             ET.SubElement(item, 'CITIZENSHIP_SGDRM_CODE').text = 'SG'
             ET.SubElement(item, 'PR_TYPE').text = 'Y'
             ET.SubElement(item, 'NRIC_BLK_HSE_NO').text = 'A22'
@@ -248,24 +230,21 @@ with st.expander("✨ Generate Random 5 Sync Records (4 Tables)", expanded=False
             ET.SubElement(item, 'NRIC_POSTAL_ECODE').text = '550000'
         sync_files[f'FULL_SFS_STUDENT_PARENT_MK_{current_timestamp}.zip'] = (f'FULL_SFS_STUDENT_PARENT_MK_{current_timestamp}.xml', root_parent)
 
-        # --- 2.4 STUDENT CUSTODIAL ---
-        root_cust = ET.Element('INTERFACE', {'INTERFACE_NAME': 'custodial_info_mk', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_timestamp}.xml', 'NO_RECORD': '5'})
-        for d_id, p_id in zip(dif_student_ids, parent_ids):
-            item = ET.SubElement(root_cust, 'STUDENT_CUSTODIAL_INFO_MK')
-            ET.SubElement(item, 'RECORD_ID').text = '1'
+        # --- 2.4 STUDENT CUSTODIAL INFO - CUSTODIAL TABLE (5 Records) ---
+        root_custodial = ET.Element('INTERFACE', {'INTERFACE_NAME': 'custodial_info_mk', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_timestamp}.xml', 'NO_RECORD': '5'})
+        for idx, (d_id, p_id) in enumerate(zip(dif_student_ids, parent_ids), start=1):
+            item = ET.SubElement(root_custodial, 'STUDENT_CUSTODIAL_INFO_MK')
+            ET.SubElement(item, 'RECORD_ID').text = str(idx)
             ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = d_id
             ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p_id
-            
-            # RANDOM FIELD: Gán ngẫu nhiên RELATION_ICODE cho bảng Custodial
-            ET.SubElement(item, 'RELATION_ICODE').text = random.choice(relation_codes_list)
-            
+            ET.SubElement(item, 'RELATION_ICODE').text = 'G4'
             ET.SubElement(item, 'CUSTODIAL_INFO').text = 'JN'
             ET.SubElement(item, f'{{{NS_XSI}}}RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
             ET.SubElement(item, 'PG_ACCESS_IND').text = '2'
             ET.SubElement(item, 'LAST_UPDATED_DATE').text = '2026-06-30'
-        sync_files[f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_timestamp}.zip'] = (f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_timestamp}.xml', root_cust)
-
-        # Đóng gói và chuẩn bị tải xuống
+        sync_files[f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_timestamp}.zip'] = (f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_timestamp}.xml', root_custodial)
+        
+        # Assemble and structure binary packages
         st.session_state["sync_download_queue"] = []
         for zip_name, (xml_name, xml_node) in sync_files.items():
             tree = ET.ElementTree(xml_node)
@@ -283,9 +262,9 @@ with st.expander("✨ Generate Random 5 Sync Records (4 Tables)", expanded=False
                 "name": zip_name,
                 "data": zip_buf.getvalue()
             })
-        st.success("🎉 Synchronized sample dataset generated successfully! See download links below.")
+        st.success("🎉 Synchronized Student & Parent datasets generated successfully!")
 
-    # Hiển thị hàng nút bấm download dữ liệu mẫu đồng bộ
+    # Render localized generation package nodes
     if "sync_download_queue" in st.session_state:
         st.write("📥 **Download Synchronized Files:**")
         cols = st.columns(len(st.session_state["sync_download_queue"]))
@@ -300,8 +279,8 @@ with st.expander("✨ Generate Random 5 Sync Records (4 Tables)", expanded=False
                     use_container_width=True
                 )
 
+# --- SECTION 3: WORKBOOK SOURCE CONVERSION ENGINE ---
 st.markdown("---")
-
 
 # Initialize Session States to prevent download button data-loss on click
 if "download_queue" not in st.session_state:
@@ -317,7 +296,7 @@ def generate_template(headers):
         df_template.to_excel(writer, index=False)
     return buffer.getvalue()
 
-# Structure XML files
+# Schema Structures definition
 TEMPLATE_COLUMNS = {
     "MAPPING": [
         "UNIQUE_ID", "STUDENT_UIN_FIN_NO", "PARENT_UIN_FIN_NO", 
@@ -434,7 +413,7 @@ with st.expander("📘 System Guidelines & Target Interface Identifiers", expand
     | **Basic Personal** | `Personal` | `FULL_SFS_STUDENT_BASIC_PERSONAL_MK_*` | `<STUDENT_BASIC_PERSONAL>` |
     | **Basic School** | `School` | `FULL_SFF_STUDENT_BASIC_SCHOOL_MK_*` | `<STUDENT_BASIC_SCHOOL>` |
     | **Student Parent** | `Parent` | `FULL_SFS_STUDENT_PARENT_MK_*` | `<STUDENT_PARENT>` |
-    | **Student Custodial** | `Custodial` | `FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_*` | `<STUDENT_PARENT>` |
+    | **Student Custodial** | `Custodial` | `FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_*` | `<STUDENT_CUSTODIAL_INFO_MK>` |
     | **Movement** | `Movement` | `FULL_SFS_MOVEMENT_MK_*` | `<MOVEMENT>` |
     """)
 
