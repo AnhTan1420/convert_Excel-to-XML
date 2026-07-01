@@ -44,7 +44,7 @@ tab_forward, tab_backward, tab_mock_generator = st.tabs([
 # ==========================================
 with tab_forward:
     # --- SECTION 3: WORKBOOK SOURCE CONVERSION ENGINE (SMART AUTO-ROUTER LOGIC) ---
-    st.subheader("⚙️ Convert (Excel ➡️ ZIP/XML)")
+    st.subheader("Convert (Excel ➡️ ZIP/XML)")
     # --- SHORT & CLEAR GUIDE ---
     with st.expander("📖 Quick Guide & Download Rules", expanded=True):
         st.markdown("""
@@ -337,7 +337,7 @@ with tab_forward:
 # --- TAB 2: REVERSE ENGINE (ZIP -> XLSX) ---
 # ==========================================
 with tab_backward:
-    st.subheader("🔄 Reverse (ZIP/XML ➡️ Excel)")
+    st.subheader("Reverse (ZIP/XML ➡️ Excel)")
     st.write("Upload a `.zip` pack containing target payload system XML file(s). The engine will parse fields and synchronize the output Excel filename with your uploaded ZIP name.")
 
     uploaded_zip_file = st.file_uploader("Upload target system ZIP file:", type=["zip"], accept_multiple_files=False, key="backward_uploader")
@@ -435,7 +435,7 @@ with tab_backward:
 # --- TAB 3: MOCK DATA GENERATOR ---
 # ==========================================
 with tab_mock_generator:
-    st.subheader("🛠️ Mock Test Data Suite")
+    st.subheader("Mock Test Data Suite")
 
     # --- ENGLISH QUICK GUIDE FOR CONVERSION & TESTING ---
     with st.expander("📖 Quick Guide & Usage Instructions (English)", expanded=True):
@@ -738,7 +738,7 @@ with tab_mock_generator:
         st.markdown("---")
         st.markdown("#### 📊 Master Consolidated Excel Workbook File")
         st.download_button(
-            label="🟢 DOWNLOAD MASTER EXCEL WORKBOOK (.XLSX)",
+            label="DOWNLOAD MASTER EXCEL WORKBOOK (.XLSX)",
             data=st.session_state["sync_xlsx_data"],
             file_name=st.session_state["sync_xlsx_name"],
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
