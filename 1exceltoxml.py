@@ -84,7 +84,7 @@ with tab_forward:
         st.session_state.pipeline_download_queue = []
         st.session_state.run_summary = {"success_count": 0, "total_records": 0}
 
-    st.markdown("### 📤 Source File Upload (Smart Detection Enabled)")
+    st.markdown("### 📤 Source File Upload")
     # Thêm `on_change=clear_forward_pipeline_cache` vào uploader
     uploaded_any_file = st.file_uploader(
         "Upload ANY single template file (.xlsx or .csv) to generate corresponding XML/ZIP files.", 
