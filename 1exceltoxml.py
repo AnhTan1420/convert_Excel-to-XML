@@ -10,6 +10,19 @@ import random
 st.set_page_config(page_title="MOE Jordan", page_icon="⚙️", layout="centered")
 st.title("MOE: Convert XLSX/CSV to XML and compress to ZIP")
 
+# Reusable Data Pools for Mock Generation
+months_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+relation_codes_list = ['F', 'M', 'G', 'G4']
+sex_codes_list = ['M', 'F']
+boolean_list = ['Y', 'N']
+res_types_list = ['HDB', 'CONDO', 'LANDED']
+
+def random_uin_generator():
+    prefix = random.choice(['S', 'T', 'G', 'F', 'M'])
+    digits = "".join([str(random.randint(0, 9)) for _ in range(7)])
+    suffix = random.choice(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'Z', 'R', 'Q', 'K', 'N', 'T'])
+    return f"{prefix}{digits}{suffix}"
+
 # --- SECTION 1: LARGE DATASET GENERATION (900K RECORDS) ---
 st.markdown("---")
 with st.expander("Generate 900K Records", expanded=False):
@@ -87,23 +100,14 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
         student_ids = [f"JDK-{i}" for i in range(101, 106)]
         parent_ids = [f"JDKRP-{i}" for i in range(101, 106)]
         
-        def random_uin():
-            prefix = random.choice(['S', 'T', 'G', 'F', 'M'])
-            digits = "".join([str(random.randint(0, 9)) for _ in range(7)])
-            suffix = random.choice(['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'Z', 'R', 'Q', 'K', 'N', 'T'])
-            return f"{prefix}{digits}{suffix}"
-            
         sync_files = {}
         mapped_student_uins = {}
-        months_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
-        relation_codes_list = ['F', 'M', 'G', 'G4']
 
         rows_mapping_xlsx = []
         rows_personal_xlsx = []
         rows_parent_xlsx = []
         rows_custodial_xlsx = []
         
-        # Temporary registry to hold exact code inheritance for Section 2 sample generator too
         sample_relation_heritage = {}
 
         root_map = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_ID_Mapping_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.xml', 'NO_RECORD': '10'})
@@ -111,7 +115,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
         
         for p_id in parent_ids:
             item = ET.SubElement(root_map, 'ID_Mapping', {'UNIQUE_ID': p_id})
-            uin_val = random_uin()
+            uin_val = random_uin_generator()
             mapped_student_uins[p_id] = uin_val 
             ET.SubElement(item, 'STUDENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
             ET.SubElement(item, 'PARENT_UIN_FIN_NO').text = uin_val
@@ -121,7 +125,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
             
         for s_id in student_ids:
             item = ET.SubElement(root_map, 'ID_Mapping', {'UNIQUE_ID': s_id})
-            uin_val = random_uin()
+            uin_val = random_uin_generator()
             mapped_student_uins[s_id] = uin_val 
             ET.SubElement(item, 'STUDENT_UIN_FIN_NO').text = uin_val
             ET.SubElement(item, f'{{{NS_XSI}}}PARENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
@@ -145,7 +149,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
             
             birth_date = f"{random.randint(10,28)}-JAN-{random.randint(2001,2008)}"
             effective_date = f"{random.randint(10, 28)}-{random.choice(months_list)}-{random.randint(2000, 2025)}"
-            sex_code = random.choice(['M', 'F'])
+            sex_code = random.choice(sex_codes_list)
             
             ET.SubElement(item, 'BIRTH_DATE').text = birth_date
             ET.SubElement(item, 'CITIZENSHIP_CODE').text = '10'
@@ -215,7 +219,6 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
             ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p_id
             
             relation_icode = random.choice(relation_codes_list)
-            # Register code relation for Custodial heritage mapping
             sample_relation_heritage[f"{s_id}_{p_id}"] = relation_icode
             
             uin_from_mapping = mapped_student_uins.get(s_id, "UNKNOWN")
@@ -258,7 +261,6 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
             ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = s_id
             ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p_id
             
-            # IMPROVEMENT: Inherit precise RELATION_ICODE mapped from Parent block 
             inherited_icode = sample_relation_heritage.get(f"{s_id}_{p_id}", "G4")
             ET.SubElement(item, 'RELATION_ICODE').text = inherited_icode
             
@@ -435,21 +437,62 @@ if uploaded_any_file:
                         else: ET.SubElement(item, col).set(f"{{{NS_XSI}}}nil", "true")
                 generated_xmls[f'FULL_SFS_ID_MAPPING_MK_{current_time}'] = root_map
 
-                # Build Personal (Mock Data based on mapping)
+                # Build Personal (UPDATED: Dynamically mock fields matching Section 2 sample instead of xs:nil)
                 root_pers = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_Personal_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}.xml', 'NO_RECORD': str(len(student_records))})
                 for st_rec in student_records:
                     item = ET.SubElement(root_pers, 'STUDENT_BASIC_PERSONAL')
                     ET.SubElement(item, 'RECORD_ID').text = '1'
                     ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = st_rec["id"]
                     ET.SubElement(item, 'STUDENT_NAME').text = f"Student-{st_rec['uin']}"
-                    ET.SubElement(item, 'BIRTH_DATE').text = "15-JAN-2005"
-                    for blank in TEMPLATE_COLUMNS["PERSONAL"][4:]:
-                        ET.SubElement(item, blank).set(f"{{{NS_XSI}}}nil", "true")
+                    ET.SubElement(item, 'HANYU_PINYIN_NAME').text = 'HANYUPINYIN'
+                    ET.SubElement(item, 'BIRTH_DATE').text = f"{random.randint(10,28)}-JAN-{random.randint(2001,2008)}"
+                    ET.SubElement(item, 'CITIZENSHIP_CODE').text = '10'
+                    ET.SubElement(item, 'CITIZENSHIP_SGDRM_CODE').text = 'SG'
+                    ET.SubElement(item, 'RACE_CODE').text = '2'
+                    ET.SubElement(item, 'RELIGION_CODE').text = '9'
+                    ET.SubElement(item, 'RELIGION_SGDRM_CODE').text = 'F'
+                    ET.SubElement(item, 'SEX_CODE').text = random.choice(sex_codes_list)
+                    ET.SubElement(item, 'EMAIL_ADDRESS').text = f"student_{st_rec['uin'].lower()}@yopmail.com"
+                    ET.SubElement(item, 'CITIZENSHIP_EFFECTIVE_DATE').text = f"01-JAN-2026"
+                    ET.SubElement(item, 'CONTACT_SAMEAS_OFFICIAL_IND').text = 'Y'
+                    ET.SubElement(item, 'CONTACTADD_BLK_HSE_NO').text = str(random.randint(10, 999))
+                    ET.SubElement(item, 'CONTACTADD_STREET_NAME').text = 'Automation Street'
+                    ET.SubElement(item, 'CONTACTADD_FLOOR_NO').text = f"{random.randint(1,15):02d}"
+                    ET.SubElement(item, 'CONTACTADD_UNIT_NO').text = f"{random.randint(1,50):02d}"
+                    ET.SubElement(item, 'CONTACTADD_BLDG_NAME').text = 'Tech Hub Tower'
+                    ET.SubElement(item, 'CONTACTADD_POSTAL_ECODE').text = str(random.randint(100000, 999999))
+                    ET.SubElement(item, 'TELEPHONE_NO').text = f"6{random.randint(1000000, 9999999)}"
+                    ET.SubElement(item, 'HANDPHONE_NO').text = f"9{random.randint(1000000, 9999999)}"
+                    ET.SubElement(item, 'OTHER_CONTACT_NO').text = '1'
+                    ET.SubElement(item, 'RES_TYPE_CODE').text = random.choice(res_types_list)
+                    ET.SubElement(item, 'OFFICIALADD_BLK_HSE_NO').text = str(random.randint(10, 999))
+                    ET.SubElement(item, 'OFFICIALADD_STREET_NAME').text = 'Official Street'
+                    ET.SubElement(item, 'OFFICIALADD_FLOOR_NO').text = f"{random.randint(1,15):02d}"
+                    ET.SubElement(item, 'OFFICIALADD_UNIT_NO').text = f"{random.randint(1,50):02d}"
+                    ET.SubElement(item, 'OFFICIALADD_BLDG_NAME').text = 'Civic Building'
+                    ET.SubElement(item, 'OFFICIALADD_POSTAL_ECODE').text = str(random.randint(100000, 999999))
+                    ET.SubElement(item, 'FOREIGNADD_LINE1_DESC').text = 'Line1'
+                    ET.SubElement(item, 'FOREIGNADD_LINE2_DESC').text = 'Line2'
+                    ET.SubElement(item, 'FOREIGNADD_POSTAL_ECODE').text = 'F1234'
+                    ET.SubElement(item, 'FOREIGNADD_COUNTRY_CODE').text = 'MY'
+                    ET.SubElement(item, 'FOREIGNADD_CONTACTCODE_NO_OLD').text = '123'
+                    ET.SubElement(item, 'FOREIGNADD_CONTACT_NO_OLD').text = '456'
+                    ET.SubElement(item, 'FOREIGNADD_CONTACTCODE_NO').text = '789'
+                    ET.SubElement(item, 'FOREIGNADD_CONTACT_NO').text = '012'
+                    ET.SubElement(item, 'FOREIGNADD_COUNTRY_SGDRM_CODE').text = 'MY'
+                    ET.SubElement(item, 'ADDRESS_IND').text = '1'
+                    ET.SubElement(item, 'CONTACTADD_STREET_CODE').text = 'ST01'
+                    ET.SubElement(item, 'OFFICIALADD_STREET_CODE').text = 'ST02'
+                    ET.SubElement(item, 'GUARDIAN_TYPE_ICODE').text = 'M'
+                    ET.SubElement(item, 'PASS_TYPE_CODE').text = '1'
+                    ET.SubElement(item, 'PASS_ISSUE_DATE').text = '20200101'
+                    ET.SubElement(item, 'PASS_EXPIRY_DATE').text = '20281231'
+                    ET.SubElement(item, 'RACE_REQUEST_DATE').text = '20200101'
+                    ET.SubElement(item, 'PR_TYPE').text = 'N'
                 generated_xmls[f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}'] = root_pers
 
                 # Dictionary registry tracking mapped relation code values for inheritance synchronization
                 pipeline_relation_heritage = {}
-                relation_codes_list = ['F', 'M', 'G', 'G4']
 
                 # Build Parent (Mock Data based on mapping pairs)
                 root_parent = ET.Element('INTERFACE', {'INTERFACE_NAME': 'Student_Parent', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_PARENT_MK_{current_time}.xml', 'NO_RECORD': str(len(paired_records))})
@@ -461,12 +504,27 @@ if uploaded_any_file:
                     
                     random_relation = random.choice(relation_codes_list)
                     ET.SubElement(item, 'RELATION_ICODE').text = random_relation
-                    
-                    # Store relation into memory mapped by Student and Parent key pair
                     pipeline_relation_heritage[f"{p['student_id']}_{p['parent_id']}"] = random_relation
                     
-                    for blank in TEMPLATE_COLUMNS["PARENT"][4:]:
-                        ET.SubElement(item, blank).set(f"{{{NS_XSI}}}nil", "true")
+                    # Parent secondary values mock fields matching section 2 specs
+                    ET.SubElement(item, 'PARENT_GUARDIAN_NAME').text = f"Parent-Of-{p['student_uin']}"
+                    ET.SubElement(item, 'CITIZENSHIP_CODE').text = '10'
+                    ET.SubElement(item, 'RACE_CODE').text = '2'
+                    ET.SubElement(item, 'STANDARD_ATTENDED_CODE').text = '2'
+                    ET.SubElement(item, 'DECEASED_YEAR').text = '2001'
+                    ET.SubElement(item, 'TELEPHONE_NO').text = f"6{random.randint(1000000, 9999999)}"
+                    ET.SubElement(item, 'HANDPHONE_NO').text = f"7{random.randint(1000000, 9999999)}"
+                    ET.SubElement(item, 'OTHER_CONTACT_NO').text = '1'
+                    ET.SubElement(item, 'BIRTH_DATE').text = '26-JUN-1981'
+                    ET.SubElement(item, 'EMAIL_ADDRESS').text = f"parent_{p['student_uin'].lower()}@yopmail.com"
+                    ET.SubElement(item, 'CITIZENSHIP_EFFECTIVE_DATE').text = f"{random.randint(10,25)}-FEB-2005"
+                    ET.SubElement(item, 'CITIZENSHIP_SGDRM_CODE').text = 'SG'
+                    ET.SubElement(item, 'PR_TYPE').text = 'Y'
+                    ET.SubElement(item, 'NRIC_BLK_HSE_NO').text = 'A22'
+                    ET.SubElement(item, 'NRIC_STREET_CODE').text = 'STA22'
+                    ET.SubElement(item, 'NRIC_FLOOR_NO').text = 'F22'
+                    ET.SubElement(item, 'NRIC_UNIT_NO').text = 'U22'
+                    ET.SubElement(item, 'NRIC_POSTAL_ECODE').text = '550000'
                 generated_xmls[f'FULL_SFS_STUDENT_PARENT_MK_{current_time}'] = root_parent
 
                 # Build Custodial (Inherits RELATION_ICODE directly from Parent block registry maps)
@@ -477,7 +535,6 @@ if uploaded_any_file:
                     ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p["student_id"]
                     ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p["parent_id"]
                     
-                    # CRITICAL IMPROVEMENT: Inheriting dynamic relation code accurately from registered collection mapping
                     inherited_relation = pipeline_relation_heritage.get(f"{p['student_id']}_{p['parent_id']}", "G4")
                     ET.SubElement(item, 'RELATION_ICODE').text = inherited_relation
                     
@@ -516,7 +573,7 @@ if uploaded_any_file:
                 generated_xmls[f'{prefix_fn}_{current_time}'] = root_node
             else:
                 st.error("❌ **Structure Error:** Unknown Excel template headers. Please check the sample templates above.")
-                st.stop()
+                st.stop()  # Sửa lỗi SyntaxError tại đây
 
             # Pack output structures into ZIP blocks
             success_count = 0
