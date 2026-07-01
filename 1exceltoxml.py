@@ -336,6 +336,7 @@ with tab_forward:
     st.markdown("---")
     st.subheader("⚙️ Automated Smart Converter Engine")
 
+    # Khởi tạo các trạng thái ban đầu trong session_state nếu chưa có
     if "pipeline_download_queue" not in st.session_state:
         st.session_state.pipeline_download_queue = []
     if "run_summary" not in st.session_state:
@@ -358,13 +359,26 @@ with tab_forward:
         with col_t5: st.download_button("📁 MOVEMENT", generate_template(TEMPLATE_COLUMNS["MOVEMENT"]), "Template_MOVEMENT.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
         with col_t6: st.download_button("📁 CUSTODIAL", generate_template(TEMPLATE_COLUMNS["CUSTODIAL"]), "Template_STUDENT_CUSTODIAL.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
 
+    # Hàm callback: Tự động chạy để clear kết quả cũ KHI XÓA FILE hoặc ĐỔI FILE MỚI
+    def clear_forward_pipeline_cache():
+        st.session_state.pipeline_download_queue = []
+        st.session_state.run_summary = {"success_count": 0, "total_records": 0}
+
     st.markdown("### 📤 Source File Upload (Smart Detection Enabled)")
-    uploaded_any_file = st.file_uploader("Upload ANY single template file (.xlsx or .csv) to generate corresponding XML/ZIP files.", type=["xlsx", "csv"], accept_multiple_files=False, key="forward_uploader")
+    # Thêm `on_change=clear_forward_pipeline_cache` vào uploader
+    uploaded_any_file = st.file_uploader(
+        "Upload ANY single template file (.xlsx or .csv) to generate corresponding XML/ZIP files.", 
+        type=["xlsx", "csv"], 
+        accept_multiple_files=False, 
+        key="forward_uploader",
+        on_change=clear_forward_pipeline_cache
+    )
 
     if uploaded_any_file:
         st.info(f"📋 **Stage Queue:** `{uploaded_any_file.name}` loaded into session memory.")
         
         if st.button("🚀 Execute Smart Conversion", type="primary", use_container_width=True):
+            # Reset lại queue trước khi build data mới
             st.session_state.pipeline_download_queue = []
             current_time = time.strftime('%Y%m%d%H%M%S')
             epoch_ms = str(int(time.time() * 1000))
@@ -457,7 +471,6 @@ with tab_forward:
                         ET.SubElement(item, 'OTHER_CONTACT_NO').text = '1'
                         ET.SubElement(item, 'RES_TYPE_CODE').text = random.choice(res_types_list)
                         ET.SubElement(item, 'OFFICIALADD_BLK_HSE_NO').text = str(random.randint(10, 999))
-                        st.write("Generating address indexes inside memory mapping...")
                         ET.SubElement(item, 'OFFICIALADD_STREET_NAME').text = 'Official Street'
                         ET.SubElement(item, 'OFFICIALADD_FLOOR_NO').text = f"{random.randint(1,15):02d}"
                         ET.SubElement(item, 'OFFICIALADD_UNIT_NO').text = f"{random.randint(1,50):02d}"
@@ -525,7 +538,7 @@ with tab_forward:
                         inherited_relation = pipeline_relation_heritage.get(f"{p['student_id']}_{p['parent_id']}", "G4")
                         ET.SubElement(item, 'RELATION_ICODE').text = inherited_relation
                         ET.SubElement(item, 'CUSTODIAL_INFO').text = 'JN'
-                        ET.SubElement(item, 'RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
+                        ET.SubElement(item, f'{{{NS_XSI}}}RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
                         ET.SubElement(item, 'PG_ACCESS_IND').text = '2'
                         ET.SubElement(item, 'LAST_UPDATED_DATE').text = '2026-06-30'
                     generated_xmls[f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}'] = root_custodial
@@ -586,6 +599,7 @@ with tab_forward:
             except Exception as e:
                 st.error(f"❌ **Pipeline Failure:** {e}")
 
+    # Chỉ hiển thị Summary section khi biến `pipeline_download_queue` có dữ liệu thực tế
     if st.session_state.pipeline_download_queue:
         st.markdown("---")
         st.markdown("### Execution Run Summary")
