@@ -233,7 +233,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student & Parent)", expand
 
         # --- 2.4 STUDENT CUSTODIAL INFO - CUSTODIAL TABLE (5 Records) ---
         root_custodial = ET.Element('INTERFACE', {'INTERFACE_NAME': 'custodial_info_mk', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_timestamp}.xml', 'NO_RECORD': '5'})
-        for idx, (d_id, p_id) in enumerate(zip(dif_student_ids, parent_ids), start=1):
+        for idx, (d_id, p_id) in enumerate(zip(student_ids, parent_ids), start=1):
             item = ET.SubElement(root_custodial, 'STUDENT_CUSTODIAL_INFO_MK')
             ET.SubElement(item, 'RECORD_ID').text = str(idx)
             ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = d_id
