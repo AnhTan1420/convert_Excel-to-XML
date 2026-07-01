@@ -8,7 +8,7 @@ import random
 
 # App Workspace Configuration
 st.set_page_config(page_title="MOE Jordan Engine", page_icon="⚙️", layout="centered")
-st.title("MOE: EXCEL ⇄ ZIP/XML Conversion Engine")
+st.title("MOE: EXCEL ⇄ ZIP/XML Conversion")
 
 # Reusable Data Pools for Mock Generation
 months_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
