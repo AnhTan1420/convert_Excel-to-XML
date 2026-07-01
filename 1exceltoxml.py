@@ -106,6 +106,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student & Parent)", expand
             
         sync_files = {}
         mapped_student_uins = {}
+        mapped_parent_uins = {}
         months_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
         relation_codes_list = ['9', 'F', '5', 'M', 'G2', 'G', 'G4', 'G3']
 
