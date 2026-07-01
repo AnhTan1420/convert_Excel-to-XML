@@ -33,7 +33,11 @@ TEMPLATE_COLUMNS = {
 }
 
 # Unified Dynamic Tabs Layout Setup
-tab_forward, tab_backward = st.tabs(["🚀 Convert Excel to XML/ZIP", "🔄 Reverse: XML/ZIP to Excel"])
+tab_forward, tab_backward, tab_mock_generator = st.tabs([
+    "📤 Forward Converter Engine", 
+    "🔄 Reverse Parser Engine",
+    "✨ Mock Data Generator"
+])
 
 # ==========================================
 # --- TAB 1: FORWARD CONVERSION ENGINE ---
