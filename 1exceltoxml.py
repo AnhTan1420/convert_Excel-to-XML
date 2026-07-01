@@ -343,11 +343,18 @@ with tab_forward:
 # ==========================================
 # --- TAB 2: REVERSE ENGINE (ZIP -> XLSX) ---
 # ==========================================
+def clear_reverse_data():
+    if "extracted_xlsx_data" in st.session_state:
+        del st.session_state["extracted_xlsx_data"]
+    if "extracted_xlsx_name" in st.session_state:
+        del st.session_state["extracted_xlsx_name"]
+    if "extracted_summary" in st.session_state:
+        del st.session_state["extracted_summary"]
 with tab_backward:
     st.subheader("Reverse (ZIP/XML ➡️ Excel)")
     st.write("Upload a `.zip` pack containing target payload system XML file(s). The engine will parse fields and synchronize the output Excel filename with your uploaded ZIP name.")
 
-    uploaded_zip_file = st.file_uploader("Upload target system ZIP file:", type=["zip"], accept_multiple_files=False, key="backward_uploader")
+    uploaded_zip_file = st.file_uploader("Upload target system ZIP file:", type=["zip"], accept_multiple_files=False, key="backward_uploader",on_change=clear_reverse_data)
 
     if uploaded_zip_file:
         st.success(f"📦 Archive `{uploaded_zip_file.name}` staged for decompression.")
@@ -427,7 +434,7 @@ with tab_backward:
         
         for s_name, df_p in st.session_state["extracted_summary"].items():
             with st.expander(f"📋 Sheet: {s_name} ({len(df_p)} Rows Detected)", expanded=True):
-                st.dataframe(df_p.head(5), use_container_width=True)
+                st.dataframe(df_p.head(10), use_container_width=True)
                 
         st.download_button(
             label=f"📥 DOWNLOAD EXTRACTED EXCEL WORKBOOK ({st.session_state['extracted_xlsx_name']})",
