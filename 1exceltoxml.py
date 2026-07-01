@@ -46,24 +46,20 @@ with tab_forward:
     # --- SECTION 3: WORKBOOK SOURCE CONVERSION ENGINE (SMART AUTO-ROUTER LOGIC) ---
     st.subheader("⚙️ Convert (Excel ➡️ ZIP/XML)")
     # --- SHORT & CLEAR GUIDE ---
-    with st.expander("📖 Quick Guide & Important Notes", expanded=True):
+    with st.expander("📖 Quick Guide & Download Rules", expanded=True):
         st.markdown("""
-        ### 📌 How to Use:
-        1. **Upload** your master Excel file containing all 4 required sheets.
-        2. **Click Convert** to generate the XML structures.
-        3. **Download** the generated `.zip` package.
+        ### 🚀 How to Use:
+        1. **Upload** your master Excel workbook (`.xlsx`).
+        2. **Click Convert** to process the data.
+        3. **Download** the output files based on the rules below.
 
-        ### ⚠️ Data Rules for Excel Sheets:
-        * 🔑 **`ID_MAPPING`**: 
-          * This is the **Master List**. 
-          * **Rule:** All Unique IDs used in your file must be declared here first.
+        ### ⚠️ File Generation & Download Rules:
+        * 🔑 **When uploading `ID_MAPPING`:**
+          * The system automatically generates and packs **4 structural ZIP files** at once.
           
-        * 📂 **`BASIC_PERSONAL`, `STUDENT_PARENT`, `STUDENT_CUSTODIAL`**:
-          * These sheets contain the actual test data (profiles, relations, custodial rights).
-          * **Rule:** Any `UNIQUE_ID` entered in these sheets **must exactly match** an ID already listed in the `ID_MAPPING` sheet.
+        * 📂 **When uploading `BASIC_PERSONAL` / `STUDENT_PARENT` / `STUDENT_CUSTODIAL`:**
+          * The system splits them. You will download **individual separate files** matching the specific Names/IDs generated from the `ID_MAPPING` data.
         """)
-
-    st.write("Upload your Excel master file below to transform and pack it into compliant XML schemas.")
 
     # Khởi tạo các trạng thái ban đầu trong session_state nếu chưa có
     if "pipeline_download_queue" not in st.session_state:
