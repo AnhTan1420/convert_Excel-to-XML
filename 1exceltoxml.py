@@ -332,12 +332,12 @@ with tab_forward:
                 st.markdown(f"🔹 **Target Interface Payload:** `{item['zip_name']}` | **Size:** {item['records']} elements")
                 st.download_button(label="📦 Download " + item['zip_name'], data=item['zip_data'], file_name=item['zip_name'], mime="application/zip", key=f"btn_{item['zip_name']}", use_container_width=True)
 
-# -------------------------------------------------------------
+    # -------------------------------------------------------------
     # --- FOOTER SECTION ---
     # -------------------------------------------------------------
     st.markdown("---")
     st.markdown(
-        "<div style='text-align: center; color: #888888; font-size: 0.85em; margin-top: 20px;'>"
+        "<div style='text-align: center; color: #888888; font-size: 0.85em; margin-top: 5px;'>"
         "🛠️ Built by <b>Jordan Le</b>"
         "</div>", 
         unsafe_allow_html=True, 
