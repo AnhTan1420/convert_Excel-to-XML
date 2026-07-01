@@ -121,9 +121,9 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
             uin_val = random_uin()
             mapped_student_uins[s_id] = uin_val 
             ET.SubElement(item, 'STUDENT_UIN_FIN_NO').text = uin_val
-            ET.SubElement(item, f'{{{NS_XSI}}}PARENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, 'PARENT_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
             ET.SubElement(item, 'STUDENT_UINFIN_TYPE_ICODE').text = '1'
-            ET.SubElement(item, f'{{{NS_XSI}}}PREV_NRIC_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
+            ET.SubElement(item, 'PREV_NRIC_UIN_FIN_NO').set(f"{{{NS_XSI}}}nil", "true")
             rows_mapping_xlsx.append({"UNIQUE_ID": s_id, "STUDENT_UIN_FIN_NO": uin_val, "PARENT_UIN_FIN_NO": "", "STUDENT_UINFIN_TYPE_ICODE": "1", "PREV_NRIC_UIN_FIN_NO": ""})
             
         sync_files[f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.zip'] = (f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.xml', root_map)
@@ -270,7 +270,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student, Parent & Custodia
             pd.DataFrame(rows_parent_xlsx).to_excel(writer, sheet_name="STUDENT_PARENT", index=False)
             pd.DataFrame(rows_custodial_xlsx).to_excel(writer, sheet_name="STUDENT_CUSTODIAL", index=False)
         st.session_state["sync_xlsx_data"] = xlsx_buffer.getvalue()
-        st.session_state["sync_xlsx_name"] = f"SYNC_SYSTEM_SAMPLE_DATA_{current_timestamp}.xlsx"
+        st.session_state["sync_xlsx_name"] = f"SAMPLE_DATA_ID_MAPPING_{current_timestamp}.xlsx"
 
         st.session_state["sync_download_queue"] = []
         for zip_name, (xml_name, xml_node) in sync_files.items():
