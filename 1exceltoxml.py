@@ -108,7 +108,7 @@ with st.expander("✨ Generate Random 5 Sync Records (Student & Parent)", expand
         mapped_student_uins = {}
         mapped_parent_uins = {}
         months_list = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
-        relation_codes_list = ['9', 'F', '5', 'M', 'G2', 'G', 'G4', 'G3']
+        relation_codes_list = ['F', 'M', 'G', 'G4']
 
         # --- 2.1 ID MAPPING (5 Parents + 5 Students = 10 Records Total) ---
         root_map = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_ID_Mapping_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_ID_MAPPING_MK_{current_timestamp}.xml', 'NO_RECORD': '10'})
