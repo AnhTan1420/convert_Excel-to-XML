@@ -48,11 +48,11 @@ with tab_forward:
     # --- SHORT & CLEAR GUIDE ---
     with st.expander("📖 Quick Guide & Download Rules", expanded=True):
         st.markdown("""
-        ### ⚠️ File Generation & Download Rules:
-        * 🔑 **When uploading `ID_MAPPING`:**
+        ### File Generation & Download Rules:
+        * **When uploading `ID_MAPPING`:**
           * The system automatically generates and packs **4 structural ZIP files** at once.
           
-        * 📂 **When uploading `BASIC_PERSONAL` / `STUDENT_PARENT` / `STUDENT_CUSTODIAL`:**
+        * **When uploading `BASIC_PERSONAL` / `STUDENT_PARENT` / `STUDENT_CUSTODIAL`:**
           * The system splits them. You will download **individual separate files** matching the specific Names/IDs generated from the `ID_MAPPING` data.
         """)
 
@@ -453,7 +453,7 @@ with tab_mock_generator:
              - 📂 **`STUDENT_PARENT`**: Handles parent links and metadata.
              - 📂 **`STUDENT_CUSTODIAL`**: Sets custodial flags while dynamically inheriting relationships (`RELATION_ICODE`) established in the parent module.
            - **Download Formats:**
-             - Use the **🟢 Master Excel Workbook (.xlsx)** to manually review or audit the raw generated values side-by-side.
+             - Use the **Master Excel Workbook (.xlsx)** to manually review or audit the raw generated values side-by-side.
              - Use the individual **Target XML Bundles (ZIPs)** to perform direct integration uploads into your staging server environments.
         """)
 
