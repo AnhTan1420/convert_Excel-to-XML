@@ -758,3 +758,14 @@ with tab_mock_generator:
                     key=f"sync_btn_{idx}",
                     use_container_width=True
                 )
+
+    # -------------------------------------------------------------
+    # --- FOOTER SECTION ---
+    # -------------------------------------------------------------
+    st.markdown("---")
+    st.markdown(
+        "<div style='text-align: center; color: #888888; font-size: 0.85em; margin-top: 20px;'>"
+        "🛠️ Built by <b>Jordan Le</b>"
+        "</div>", 
+        unsafe_html=True
+    )
