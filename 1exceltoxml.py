@@ -138,7 +138,7 @@ with tab_forward:
                 elif "STRAT_DATE" in headers or "REASON" in headers:
                     detected_mode = "MOVEMENT"
                     
-                # st.write(f"🔍 **Engine Status:** Detected input data structure matches layout: **{detected_mode}**")
+                st.write(f"🔍 **Engine Status:** Detected input data structure matches layout: **{detected_mode}**")
                 generated_xmls = {}
 
                 if detected_mode == "MAPPING":
@@ -289,7 +289,8 @@ with tab_forward:
                         for col in TEMPLATE_COLUMNS[detected_mode]:
                             val = row.get(col, "").strip()
                             if col in ["UNIQUE_ID", "STUDENT_UNIQUE_ID", "PARENT_UNIQUE_ID"] and val:
-                                item.set('UNIQUE_ID', 'Y') if col=="STUDENT_UNIQUE_ID" else None
+                                if col == "STUDENT_UNIQUE_ID":
+                                   item.set('UNIQUE_ID', 'Y')
                                 ET.SubElement(item, col).text = val
                             elif val:
                                 ET.SubElement(item, col).text = val
