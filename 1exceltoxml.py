@@ -138,8 +138,8 @@ with tab_forward:
                 elif "STRAT_DATE" in headers or "REASON" in headers:
                     detected_mode = "MOVEMENT"
                     
-                st.write(f"🔍 **Engine Status:** Detected input data structure matches layout: **{detected_mode}**")
-                
+                # st.write(f"🔍 **Engine Status:** Detected input data structure matches layout: **{detected_mode}**")
+                generated_xmls = {}
 
                 if detected_mode == "MAPPING":
                     student_records = []
