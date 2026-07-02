@@ -139,7 +139,7 @@ with tab_forward:
                     detected_mode = "MOVEMENT"
                     
                 st.write(f"🔍 **Engine Status:** Detected input data structure matches layout: **{detected_mode}**")
-                generated_xmls = {}
+                
 
                 if detected_mode == "MAPPING":
                     student_records = []
