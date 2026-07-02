@@ -355,7 +355,7 @@ with tab_backward:
     st.subheader("Reverse (ZIP/XML ➡️ Excel)")
     st.write("Upload a `.zip` pack containing target payload system XML file(s). The engine will parse fields and synchronize the output Excel filename with your uploaded ZIP name.")
 
-    uploaded_zip_file = st.file_uploader("Upload target system ZIP file:", type=["zip"], accept_multiple_files=True, key="backward_uploader",on_change=clear_reverse_data)
+    uploaded_zip_file = st.file_uploader("Upload target system ZIP file:", type=["zip"], key="backward_uploader",on_change=clear_reverse_data)
 
     if uploaded_zip_file:
         st.success(f"📦 Archive `{uploaded_zip_file.name}` staged for decompression.")
