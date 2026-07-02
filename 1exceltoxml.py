@@ -452,7 +452,7 @@ with tab_mock_generator:
     st.subheader("Mock Test Data Suite")
 
     # --- ENGLISH QUICK GUIDE FOR CONVERSION & TESTING ---
-    with st.expander("📖 Quick Guide & Usage Instructions (English)", expanded=True):
+    with st.expander("📖 Quick Guide & Usage Instructions", expanded=False):
         st.markdown("""
         1. **Performance & Stress Testing (Section 1):**
            - Click **"Start Generating (900K)"** to compile a heavy dataset containing 900,000 sequential `CUSTODIAL` records.
