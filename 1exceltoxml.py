@@ -227,8 +227,8 @@ with tab_forward:
                             ET.SubElement(item, 'PR_TYPE').text = 'N'
                         generated_xmls[f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}'] = root_pers
                         
-                       root_sch = ET.Element('INTERFACE', {'INTERFACE_NAME': 'basic_school', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}.xml', 'NO_RECORD': str(len(student_records))})
-                       for idx, st_rec in enumerate(student_records, start=1):
+                        root_sch = ET.Element('INTERFACE', {'INTERFACE_NAME': 'basic_school', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}.xml', 'NO_RECORD': str(len(student_records))})
+                        for idx, st_rec in enumerate(student_records, start=1):
                             item = ET.SubElement(root_sch, 'STUDENT_BASIC_SCHOOL')
                         
                             ET.SubElement(item, 'RECORD_ID').text = str(idx)
@@ -270,7 +270,7 @@ with tab_forward:
                             ET.SubElement(item, f"{{{NS_XSI}}}JC_PROVISIONAL_IND").set(f"{{{NS_XSI}}}nil", "true")
                             ET.SubElement(item, f"{{{NS_XSI}}}POSTED_IND").set(f"{{{NS_XSI}}}nil", "true")
                             ET.SubElement(item, f"{{{NS_XSI}}}IP_IND").set(f"{{{NS_XSI}}}nil", "true")
-                      generated_xmls[f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}'] = root_sch
+                       generated_xmls[f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}'] = root_sch
                         
                     # Chỉ tạo thêm PARENT và CUSTODIAL (Đủ bộ 4 tệp) khi file có chứa bản ghi nhóm Parent
                     if parent_records:
