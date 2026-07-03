@@ -391,11 +391,11 @@ with tab_forward:
                     st.markdown("### 👀 XML Preview")
            
                     for file_key, xml_obj in generated_xmls.items():
-                        with st.expander(f"📄 Xem trước: {file_key}"):
+                        with st.expander(f"📄 Preview: {file_key}"):
                             xml_content = prettify_xml(xml_obj)
                 
                             st.code(
-                                xml_content[:3000] + ("\n... [Nội dung đã bị cắt bớt để tối ưu hiển thị]" if len(xml_content) > 3000 else ""), 
+                                xml_content[:100] + ("\n... [Content has been truncated for optimal display]" if len(xml_content) > 100 else ""), 
                                 language="xml"
                             )
                 # -------------------------------
