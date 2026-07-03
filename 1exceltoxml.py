@@ -23,10 +23,6 @@ relation_codes_list = ['F', 'M', 'G', 'G4']
 sex_codes_list = ['M', 'F']
 boolean_list = ['Y', 'N']
 res_types_list = ['HDB', 'CONDO', 'LANDED']
-school_names_pool = ['Anchor Green Primary School', 'CHIJ Primary (Toapayoh)', 'Edgefield Primary School', 'Rosyth School', 'Raffles Institution']
-
-def generate_hex_id():
-    return "".join(random.choice("0123456789abcdef") for _ in range(32))
 
 def random_uin_generator():
     prefix = random.choice(['S', 'T', 'G', 'F', 'M'])
@@ -60,8 +56,8 @@ with tab_forward:
         st.markdown("""
         ### File Generation & Download Rules:
         * **When uploading `ID_MAPPING`:**
-          * If only Student node exist: Generates **2 structural ZIP files** (`ID_MAPPING` & `BASIC_PERSONAL`).
-          * If Student & Parent node exist: Generates **4 structural ZIP files** ( `ID_MAPPING` & `BASIC_PERSONAL` & `PARENT` & `CUSTODIAL`).
+          * If only Student entries exist: Generates **2 structural ZIP files** (`ID_MAPPING` & `BASIC_PERSONAL`).
+          * If Parent entries exist: Generates **4 structural ZIP files** (Includes `PARENT` & `CUSTODIAL`).
         * **When uploading `BASIC_PERSONAL` / `STUDENT_PARENT` / `STUDENT_CUSTODIAL`:**
           * Downloads matching separate individual payload files.
         """)
@@ -79,12 +75,11 @@ with tab_forward:
         return buffer.getvalue()
 
     with st.expander("📥 Download Excel Sample Templates", expanded=False):
-        col_t1, col_t2, col_t3 = st.columns(3)
+        st.markdown("Select the School Cockpit MK template type below to download the standard Excel file structure:")
+        col_t1, col_t2, col_t3, col_t4, col_t5, col_t6 = st.columns(6)
         with col_t1: st.download_button("📁 ID_MAPPING", generate_template(TEMPLATE_COLUMNS["MAPPING"]), "Template_ID_MAPPING.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
         with col_t2: st.download_button("📁 PERSONAL", generate_template(TEMPLATE_COLUMNS["PERSONAL"]), "Template_BASIC_PERSONAL.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
         with col_t3: st.download_button("📁 SCHOOL", generate_template(TEMPLATE_COLUMNS["SCHOOL"]), "Template_BASIC_SCHOOL.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-        
-        col_t4, col_t5, col_t6 = st.columns(3)
         with col_t4: st.download_button("📁 PARENT", generate_template(TEMPLATE_COLUMNS["PARENT"]), "Template_STUDENT_PARENT.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
         with col_t5: st.download_button("📁 MOVEMENT", generate_template(TEMPLATE_COLUMNS["MOVEMENT"]), "Template_MOVEMENT.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
         with col_t6: st.download_button("📁 CUSTODIAL", generate_template(TEMPLATE_COLUMNS["CUSTODIAL"]), "Template_STUDENT_CUSTODIAL.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
@@ -97,6 +92,7 @@ with tab_forward:
     uploaded_any_file = st.file_uploader(
         "Upload ANY single template file (.xlsx or .csv) to generate corresponding XML/ZIP files.", 
         type=["xlsx", "csv"], 
+        accept_multiple_files=False, 
         key="forward_uploader",
         on_change=clear_forward_pipeline_cache
     )
@@ -127,90 +123,170 @@ with tab_forward:
                     detected_mode = "MAPPING"
                 elif "STUDENT_NAME" in headers and "BIRTH_DATE" in headers:
                     detected_mode = "PERSONAL"
-                elif "SCHOOL_CODE" in headers and "ADMISSION_NO" in headers:
-                    detected_mode = "SCHOOL"
                 elif "PARENT_GUARDIAN_NAME" in headers and "PARENT_UNIQUE_ID" in headers:
                     detected_mode = "PARENT"
                 elif "CUSTODIAL_INFO" in headers and "RELATIONSHIP" in headers:
                     detected_mode = "CUSTODIAL"
+                elif "SCHOOL_CODE" in headers and "ADMISSION_NO" in headers:
+                    detected_mode = "SCHOOL"
                 elif "STRAT_DATE" in headers or "REASON" in headers:
                     detected_mode = "MOVEMENT"
                     
                 st.write(f"🔍 **Engine Status:** Detected input data structure matches layout: **{detected_mode}**")
                 generated_xmls = {}
 
-                # --- AUTO GENERATE 5 FILES FROM MAPPING MODE ---
+                # --- CẢI TIẾN LOGIC CHO MAPPING MODE ---
                 if detected_mode == "MAPPING":
-                    # 1. Gốc ID_MAPPING
-                    root_map = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_ID_Mapping_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_ID_MAPPING_MK_{current_time}.xml', 'NO_RECORD': str(len(df_input))})
-                    ET.register_namespace('xs', NS_XSI)
+                    student_records = []
+                    parent_records = []
+                    
                     for _, row in df_input.iterrows():
                         uid = row.get("UNIQUE_ID", "").strip()
+                        st_uin = row.get("STUDENT_UIN_FIN_NO", "").strip()
+                        pt_uin = row.get("PARENT_UIN_FIN_NO", "").strip()
+                        
+                        if uid:
+                            # Nếu có PARENT_UIN_FIN_NO thì xác định là Parent node (Bất kể student UIN có giá trị hay không)
+                            if pt_uin:
+                                parent_records.append({"id": uid, "uin": pt_uin})
+                            elif st_uin:
+                                student_records.append({"id": uid, "uin": st_uin})
+                    
+                    # 1. Khởi tạo file ID Mapping XML gốc
+                    root_map = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_ID_Mapping_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_ID_MAPPING_MK_{current_time}.xml', 'NO_RECORD': str(len(df_input))})
+                    ET.register_namespace('xs', NS_XSI)
+                    
+                    for _, row in df_input.iterrows():
+                        uid = row.get("UNIQUE_ID", "").strip()
+                        pt_uin = row.get("PARENT_UIN_FIN_NO", "").strip()
+                        
                         item = ET.SubElement(root_map, 'ID_Mapping', {'UNIQUE_ID': uid})
                         for col in ["STUDENT_UIN_FIN_NO", "PARENT_UIN_FIN_NO", "STUDENT_UINFIN_TYPE_ICODE", "PREV_NRIC_UIN_FIN_NO"]:
                             val = row.get(col, "").strip()
-                            if val: ET.SubElement(item, col).text = val
-                            else: ET.SubElement(item, col).set(f"{{{NS_XSI}}}nil", "true")
+                            
+                            # Cải tiến: Nếu là dòng Parent Node nhưng STUDENT_UIN_FIN_NO có giá trị -> Force về rỗng để hiển thị null trong XML
+                            if col == "STUDENT_UIN_FIN_NO" and pt_uin:
+                                val = ""
+                                
+                            if val: 
+                                ET.SubElement(item, col).text = val
+                            else: 
+                                ET.SubElement(item, col).set(f"{{{NS_XSI}}}nil", "true")
+                                
                     generated_xmls[f'FULL_SFS_ID_MAPPING_MK_{current_time}'] = root_map
 
-                    # Khởi tạo 4 phân hệ danh sách dữ liệu mô phỏng đồng bộ
-                    personal_rows = []
-                    school_rows = []
-                    parent_rows = []
-                    custodial_rows = []
-                    
-                    idx = 1
-                    for _, row in df_input.iterrows():
-                        uid = row.get("UNIQUE_ID", "").strip() or generate_hex_id()
-                        st_uin = row.get("STUDENT_UIN_FIN_NO", "").strip() or random_uin_generator()
-                        pt_uin = row.get("PARENT_UIN_FIN_NO", "").strip() or random_uin_generator()
-                        p_uid = generate_hex_id()
-                        rel_code = random.choice(relation_codes_list)
-                        
-                        # Mock Personal Data
-                        p_data = {c: "" for c in TEMPLATE_COLUMNS["PERSONAL"]}
-                        p_data.update({"RECORD_ID": str(idx), "UNIQUE_ID": uid, "STUDENT_NAME": f"Student-{st_uin}", "HANYU_PINYIN_NAME": "HANYUPINYIN", "BIRTH_DATE": f"{random.randint(10,28)}-JAN-2015", "CITIZENSHIP_CODE": "10", "CITIZENSHIP_SGDRM_CODE": "SG", "RACE_CODE": "2", "RELIGION_CODE": "9", "RELIGION_SGDRM_CODE": "F", "SEX_CODE": random.choice(sex_codes_list), "EMAIL_ADDRESS": f"student_{st_uin.lower()}@yopmail.com", "CONTACT_SAMEAS_OFFICIAL_IND": "Y", "RES_TYPE_CODE": random.choice(res_types_list), "ADDRESS_IND": "1"})
-                        personal_rows.append(p_data)
-                        
-                        # Mock School Data
-                        s_data = {c: "" for c in TEMPLATE_COLUMNS["SCHOOL"]}
-                        s_data.update({"RECORD_ID": str(idx), "UNIQUE_ID": uid, "STUDENT_STATUS_ICODE": "A", "SCHOOL_CODE": str(random.randint(2300, 2350)), "ACADEMIC_YEAR": "2026", "LEVEL_XCODE": "11", "STREAM_XCODE": "00", "CLASS_XCODE": "P1-01", "ACAD_STATUS_ICODE": "PR", "SCHOOL_NAME": random.choice(school_names_pool), "CLASS_NAME": "P1-01", "LEVEL_NAME": "P1", "STREAM_NAME": "NIL", "INTF_PROMOTION_IND": "N"})
-                        school_rows.append(s_data)
-                        
-                        # Mock Parent Data
-                        pa_data = {c: "" for c in TEMPLATE_COLUMNS["PARENT"]}
-                        pa_data.update({"RECORD_ID": str(idx), "UNIQUE_ID": uid, "PARENT_UNIQUE_ID": p_uid, "RELATION_ICODE": rel_code, "PARENT_GUARDIAN_NAME": f"Parent-Of-{st_uin}", "CITIZENSHIP_CODE": "10", "RACE_CODE": "2", "BIRTH_DATE": "26-JUN-1981", "EMAIL_ADDRESS": f"parent_{st_uin.lower()}@yopmail.com"})
-                        parent_rows.append(pa_data)
-                        
-                        # Mock Custodial Data
-                        c_data = {c: "" for c in TEMPLATE_COLUMNS["CUSTODIAL"]}
-                        c_data.update({"RECORD_ID": str(idx), "UNIQUE_ID": uid, "PARENT_UNIQUE_ID": p_uid, "RELATION_ICODE": rel_code, "CUSTODIAL_INFO": "JN", "PG_ACCESS_IND": "2", "LAST_UPDATED_DATE": "2026-06-30"})
-                        custodial_rows.append(c_data)
-                        idx += 1
+                    # 2. Khởi tạo file BASIC PERSONAL XML (Nếu danh sách học sinh tồn tại)
+                    if student_records:
+                        root_pers = ET.Element('INTERFACE', {'INTERFACE_NAME': 'STUDENT_Personal_INFO', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}.xml', 'NO_RECORD': str(len(student_records))})
+                        for st_rec in student_records:
+                            item = ET.SubElement(root_pers, 'STUDENT_BASIC_PERSONAL')
+                            ET.SubElement(item, 'RECORD_ID').text = '1'
+                            ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = st_rec["id"]
+                            ET.SubElement(item, 'STUDENT_NAME').text = f"Student-{st_rec['uin']}"
+                            ET.SubElement(item, 'HANYU_PINYIN_NAME').text = 'HANYUPINYIN'
+                            ET.SubElement(item, 'BIRTH_DATE').text = f"{random.randint(10,28)}-JAN-{random.randint(2001,2008)}"
+                            ET.SubElement(item, 'CITIZENSHIP_CODE').text = '10'
+                            ET.SubElement(item, 'CITIZENSHIP_SGDRM_CODE').text = 'SG'
+                            ET.SubElement(item, 'RACE_CODE').text = '2'
+                            ET.SubElement(item, 'RELIGION_CODE').text = '9'
+                            ET.SubElement(item, 'RELIGION_SGDRM_CODE').text = 'F'
+                            ET.SubElement(item, 'SEX_CODE').text = random.choice(sex_codes_list)
+                            ET.SubElement(item, 'EMAIL_ADDRESS').text = f"student_{st_rec['uin'].lower()}@yopmail.com"
+                            ET.SubElement(item, 'CITIZENSHIP_EFFECTIVE_DATE').text = f"01-JAN-2026"
+                            ET.SubElement(item, 'CONTACT_SAMEAS_OFFICIAL_IND').text = 'Y'
+                            ET.SubElement(item, 'CONTACTADD_BLK_HSE_NO').text = str(random.randint(10, 999))
+                            ET.SubElement(item, 'CONTACTADD_STREET_NAME').text = 'Automation Street'
+                            ET.SubElement(item, 'CONTACTADD_FLOOR_NO').text = f"{random.randint(1,15):02d}"
+                            ET.SubElement(item, 'CONTACTADD_UNIT_NO').text = f"{random.randint(1,50):02d}"
+                            ET.SubElement(item, 'CONTACTADD_BLDG_NAME').text = 'Tech Hub Tower'
+                            ET.SubElement(item, 'CONTACTADD_POSTAL_ECODE').text = str(random.randint(100000, 999999))
+                            ET.SubElement(item, 'TELEPHONE_NO').text = f"6{random.randint(1000000, 9999999)}"
+                            ET.SubElement(item, 'HANDPHONE_NO').text = f"9{random.randint(1000000, 9999999)}"
+                            ET.SubElement(item, 'OTHER_CONTACT_NO').text = '1'
+                            ET.SubElement(item, 'RES_TYPE_CODE').text = random.choice(res_types_list)
+                            ET.SubElement(item, 'OFFICIALADD_BLK_HSE_NO').text = str(random.randint(10, 999))
+                            ET.SubElement(item, 'OFFICIALADD_STREET_NAME').text = 'Official Street'
+                            ET.SubElement(item, 'OFFICIALADD_FLOOR_NO').text = f"{random.randint(1,15):02d}"
+                            ET.SubElement(item, 'OFFICIALADD_UNIT_NO').text = f"{random.randint(1,50):02d}"
+                            ET.SubElement(item, 'OFFICIALADD_BLDG_NAME').text = 'Civic Building'
+                            ET.SubElement(item, 'OFFICIALADD_POSTAL_ECODE').text = str(random.randint(100000, 999999))
+                            ET.SubElement(item, 'FOREIGNADD_LINE1_DESC').text = 'Line1'
+                            ET.SubElement(item, 'FOREIGNADD_LINE2_DESC').text = 'Line2'
+                            ET.SubElement(item, 'FOREIGNADD_POSTAL_ECODE').text = 'F1234'
+                            ET.SubElement(item, 'FOREIGNADD_COUNTRY_CODE').text = 'MY'
+                            ET.SubElement(item, 'FOREIGNADD_CONTACTCODE_NO_OLD').text = '123'
+                            ET.SubElement(item, 'FOREIGNADD_CONTACT_NO_OLD').text = '456'
+                            ET.SubElement(item, 'FOREIGNADD_CONTACTCODE_NO').text = '789'
+                            ET.SubElement(item, 'FOREIGNADD_CONTACT_NO').text = '012'
+                            ET.SubElement(item, 'FOREIGNADD_COUNTRY_SGDRM_CODE').text = 'MY'
+                            ET.SubElement(item, 'ADDRESS_IND').text = '1'
+                            ET.SubElement(item, 'CONTACTADD_STREET_CODE').text = 'ST01'
+                            ET.SubElement(item, 'OFFICIALADD_STREET_CODE').text = 'ST02'
+                            ET.SubElement(item, 'GUARDIAN_TYPE_ICODE').text = 'M'
+                            ET.SubElement(item, 'PASS_TYPE_CODE').text = '1'
+                            ET.SubElement(item, 'PASS_ISSUE_DATE').text = '20200101'
+                            ET.SubElement(item, 'PASS_EXPIRY_DATE').text = '20281231'
+                            ET.SubElement(item, 'RACE_REQUEST_DATE').text = '20200101'
+                            ET.SubElement(item, 'PR_TYPE').text = 'N'
+                        generated_xmls[f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}'] = root_pers
 
-                    # Đóng gói cây XML cho 4 file vệ tinh tự sinh
-                    sub_configs = [
-                        ("PERSONAL", "STUDENT_Personal_INFO", "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "STUDENT_BASIC_PERSONAL", personal_rows),
-                        ("SCHOOL", "STUDENT_School_INFO", "FULL_SFF_STUDENT_BASIC_SCHOOL_MK", "STUDENT_BASIC_SCHOOL", school_rows),
-                        ("PARENT", "Student_Parent", "FULL_SFS_STUDENT_PARENT_MK", "STUDENT_PARENT", parent_rows),
-                        ("CUSTODIAL", "custodial_info_mk", "FULL_SFS_STUDENT_CUSTODIAL_INFO_MK", "STUDENT_CUSTODIAL_INFO_MK", custodial_rows)
-                    ]
-                    
-                    for m_key, intf, fn_pref, r_tag, data_list in sub_configs:
-                        r_node = ET.Element('INTERFACE', {'INTERFACE_NAME': intf, 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'{fn_pref}_{current_time}.xml', 'NO_RECORD': str(len(data_list))})
-                        for r_dict in data_list:
-                            item = ET.SubElement(r_node, r_tag)
-                            for col in TEMPLATE_COLUMNS[m_key]:
-                                val = r_dict.get(col, "").strip()
-                                if col == "RELATIONSHIP" and m_key == "CUSTODIAL":
-                                    ET.SubElement(item, f'{{{NS_XSI}}}RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
-                                elif val:
-                                    ET.SubElement(item, col).text = val
-                                else:
-                                    ET.SubElement(item, col).set(f"{{{NS_XSI}}}nil", "true")
-                        generated_xmls[f'{fn_pref}_{current_time}'] = r_node
+                    # Cải tiến: CHỈ tạo PARENT và CUSTODIAL (4 tệp) khi file có dữ liệu Parent Node
+                    if parent_records:
+                        paired_records = []
+                        min_len = min(len(student_records), len(parent_records))
+                        for i in range(min_len):
+                            paired_records.append({
+                                "student_id": student_records[i]["id"], "student_uin": student_records[i]["uin"],
+                                "parent_id": parent_records[i]["id"], "parent_uin": parent_records[i]["uin"]
+                            })
+                        
+                        pipeline_relation_heritage = {}
+                        root_parent = ET.Element('INTERFACE', {'INTERFACE_NAME': 'Student_Parent', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_PARENT_MK_{current_time}.xml', 'NO_RECORD': str(len(paired_records))})
+                        for p in paired_records:
+                            item = ET.SubElement(root_parent, 'STUDENT_PARENT')
+                            ET.SubElement(item, 'RECORD_ID').text = '1'
+                            ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p["student_id"]
+                            ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p["parent_id"]
+                            
+                            random_relation = random.choice(relation_codes_list)
+                            ET.SubElement(item, 'RELATION_ICODE').text = random_relation
+                            pipeline_relation_heritage[f"{p['student_id']}_{p['parent_id']}"] = random_relation
+                            
+                            ET.SubElement(item, 'PARENT_GUARDIAN_NAME').text = f"Parent-Of-{p['student_uin']}"
+                            ET.SubElement(item, 'CITIZENSHIP_CODE').text = '10'
+                            ET.SubElement(item, 'RACE_CODE').text = '2'
+                            ET.SubElement(item, 'STANDARD_ATTENDED_CODE').text = '2'
+                            ET.SubElement(item, 'DECEASED_YEAR').text = '2001'
+                            ET.SubElement(item, 'TELEPHONE_NO').text = f"6{random.randint(1000000, 9999999)}"
+                            ET.SubElement(item, 'HANDPHONE_NO').text = f"7{random.randint(1000000, 9999999)}"
+                            ET.SubElement(item, 'OTHER_CONTACT_NO').text = '1'
+                            ET.SubElement(item, 'BIRTH_DATE').text = '26-JUN-1981'
+                            ET.SubElement(item, 'EMAIL_ADDRESS').text = f"parent_{p['student_uin'].lower()}@yopmail.com"
+                            ET.SubElement(item, 'CITIZENSHIP_EFFECTIVE_DATE').text = f"{random.randint(10,25)}-FEB-2005"
+                            ET.SubElement(item, 'CITIZENSHIP_SGDRM_CODE').text = 'SG'
+                            ET.SubElement(item, 'PR_TYPE').text = 'Y'
+                            ET.SubElement(item, 'NRIC_BLK_HSE_NO').text = 'A22'
+                            ET.SubElement(item, 'NRIC_STREET_CODE').text = 'STA22'
+                            ET.SubElement(item, 'NRIC_FLOOR_NO').text = 'F22'
+                            ET.SubElement(item, 'NRIC_UNIT_NO').text = 'U22'
+                            ET.SubElement(item, 'NRIC_POSTAL_ECODE').text = '550000'
+                        generated_xmls[f'FULL_SFS_STUDENT_PARENT_MK_{current_time}'] = root_parent
 
-                # --- SINGLE FILE TRANSFORMATION MODE ---
+                        root_custodial = ET.Element('INTERFACE', {'INTERFACE_NAME': 'custodial_info_mk', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}.xml', 'NO_RECORD': str(len(paired_records))})
+                        for idx, p in enumerate(paired_records, start=1):
+                            item = ET.SubElement(root_custodial, 'STUDENT_CUSTODIAL_INFO_MK')
+                            ET.SubElement(item, 'RECORD_ID').text = str(idx)
+                            ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p["student_id"]
+                            ET.SubElement(item, 'PARENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = p["parent_id"]
+                            
+                            inherited_relation = pipeline_relation_heritage.get(f"{p['student_id']}_{p['parent_id']}", "G4")
+                            ET.SubElement(item, 'RELATION_ICODE').text = inherited_relation
+                            ET.SubElement(item, 'CUSTODIAL_INFO').text = 'JN'
+                            ET.SubElement(item, f'{{{NS_XSI}}}RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'PG_ACCESS_IND').text = '2'
+                            ET.SubElement(item, 'LAST_UPDATED_DATE').text = '2026-06-30'
+                        generated_xmls[f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}'] = root_custodial
+
                 elif detected_mode in ["PERSONAL", "PARENT", "CUSTODIAL", "SCHOOL", "MOVEMENT"]:
                     tag_row_map = {
                         "PERSONAL": ("STUDENT_Personal_INFO", "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "STUDENT_BASIC_PERSONAL"),
@@ -219,6 +295,7 @@ with tab_forward:
                         "SCHOOL": ("STUDENT_School_INFO", "FULL_SFF_STUDENT_BASIC_SCHOOL_MK", "STUDENT_BASIC_SCHOOL"),
                         "MOVEMENT": ("STUDENT_Movement_INFO", "FULL_SFS_MOVEMENT_MK", "MOVEMENT")
                     }
+                    
                     intf_name, prefix_fn, row_tag = tag_row_map[detected_mode]
                     root_node = ET.Element('INTERFACE', {'INTERFACE_NAME': intf_name, 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'{prefix_fn}_{current_time}.xml', 'NO_RECORD': str(len(df_input))})
                     ET.register_namespace('xs', NS_XSI)
@@ -227,18 +304,19 @@ with tab_forward:
                         item = ET.SubElement(root_node, row_tag)
                         for col in TEMPLATE_COLUMNS[detected_mode]:
                             val = row.get(col, "").strip()
-                            if col == "RELATIONSHIP" and detected_mode == "CUSTODIAL":
-                                ET.SubElement(item, f'{{{NS_XSI}}}RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
+                            if col in ["UNIQUE_ID", "STUDENT_UNIQUE_ID", "PARENT_UNIQUE_ID"] and val:
+                                if col == "STUDENT_UNIQUE_ID":
+                                   item.set('UNIQUE_ID', 'Y')
+                                ET.SubElement(item, col).text = val
                             elif val:
                                 ET.SubElement(item, col).text = val
                             else:
                                 ET.SubElement(item, col).set(f"{{{NS_XSI}}}nil", "true")
                     generated_xmls[f'{prefix_fn}_{current_time}'] = root_node
                 else:
-                    st.error("❌ **Structure Error:** Unknown template format. Please check layout columns.")
+                    st.error("❌ **Structure Error:** Unknown Excel template headers. Please check the sample templates above.")
                     st.stop()
 
-                # Đóng gói ZIP payload hàng loạt
                 success_count = 0
                 total_rows = 0
                 for prefix_name, xml_node in generated_xmls.items():
@@ -277,24 +355,31 @@ with tab_forward:
             with st.container(border=True):
                 st.markdown(f"🔹 **Target Interface Payload:** `{item['zip_name']}` | **Size:** {item['records']} elements")
                 st.download_button(label="📦 Download " + item['zip_name'], data=item['zip_data'], file_name=item['zip_name'], mime="application/zip", key=f"btn_{item['zip_name']}", use_container_width=True)
-                
+
 # ==========================================
 # --- TAB 2: REVERSE ENGINE (ZIP -> XLSX) ---
 # ==========================================
 def clear_reverse_data():
-    if "extracted_xlsx_data" in st.session_state: del st.session_state["extracted_xlsx_data"]
-    if "extracted_xlsx_name" in st.session_state: del st.session_state["extracted_xlsx_name"]
-    if "extracted_summary" in st.session_state: del st.session_state["extracted_summary"]
-
+    if "extracted_xlsx_data" in st.session_state:
+        del st.session_state["extracted_xlsx_data"]
+    if "extracted_xlsx_name" in st.session_state:
+        del st.session_state["extracted_xlsx_name"]
+    if "extracted_summary" in st.session_state:
+        del st.session_state["extracted_summary"]
 with tab_backward:
     st.subheader("Reverse (ZIP/XML ➡️ Excel)")
+    st.write("Upload a `.zip` pack containing target payload system XML file(s).")
+
     uploaded_zip_file = st.file_uploader("Upload target system ZIP file:", type=["zip"], key="backward_uploader", on_change=clear_reverse_data)
 
     if uploaded_zip_file:
         st.success(f"📦 Archive `{uploaded_zip_file.name}` staged for decompression.")
+        
         if st.button("🏁 Run Reverse Extraction Pipeline", type="primary", use_container_width=True):
             try:
-                base_excel_name = uploaded_zip_file.name.rsplit(".", 1)[0]
+                zip_filename_raw = uploaded_zip_file.name
+                base_excel_name = zip_filename_raw.rsplit(".", 1)[0]
+                
                 zip_in_mem = zipfile.ZipFile(io.BytesIO(uploaded_zip_file.read()))
                 parsed_sheets = {}
                 
@@ -306,41 +391,61 @@ with tab_backward:
                         
                         for row_node in root:
                             row_dict = {}
+                            if "UNIQUE_ID" in row_node.attrib:
+                                row_dict["UNIQUE_ID"] = row_node.attrib["UNIQUE_ID"]
+                                
                             for element in row_node:
                                 tag_clean = element.tag.split("}")[-1]
-                                is_nil = any(k.endswith("nil") and v == "true" for k, v in element.attrib.items())
+                                is_nil = False
+                                for attr_key, attr_val in element.attrib.items():
+                                    if attr_key.endswith("nil") and attr_val == "true":
+                                        is_nil = True
+                                
                                 row_dict[tag_clean] = "" if is_nil else (element.text or "").strip()
-                            if "UNIQUE_ID" in row_node.attrib and "UNIQUE_ID" not in row_dict:
-                                row_dict["UNIQUE_ID"] = row_node.attrib["UNIQUE_ID"]
-                            if row_dict: records_list.append(row_dict)
+                            
+                            if row_dict:
+                                records_list.append(row_dict)
                         
                         if records_list:
-                            sheet_clean_name = file_inside.split("/")[-1].rsplit(".", 1)[0][:31]
-                            parsed_sheets[sheet_clean_name] = pd.DataFrame(records_list)
+                            df_sheet = pd.DataFrame(records_list)
+                            base_xml_name = file_inside.split("/")[-1]
+                            sheet_clean_name = base_xml_name.rsplit(".", 1)[0]
+                            if len(sheet_clean_name) > 31:
+                                sheet_clean_name = sheet_clean_name[:31]
+                            
+                            parsed_sheets[sheet_clean_name] = df_sheet
 
                 if parsed_sheets:
                     out_xlsx_buffer = io.BytesIO()
                     with pd.ExcelWriter(out_xlsx_buffer, engine='openpyxl') as writer:
                         for sheet_name, df_data in parsed_sheets.items():
                             df_data.to_excel(writer, sheet_name=sheet_name, index=False)
+                    
                     st.session_state["extracted_xlsx_data"] = out_xlsx_buffer.getvalue()
                     st.session_state["extracted_xlsx_name"] = f"{base_excel_name}.xlsx"
                     st.session_state["extracted_summary"] = parsed_sheets
-                    st.success("🎉 Extraction pipeline executed with 100% data fidelity.")
+                    st.success(f"🎉 Extraction pipeline executed with 100% data fidelity. Target name: `{st.session_state['extracted_xlsx_name']}`")
                 else:
-                    st.error("⚠️ No valid XML files detected inside the archive.")
+                    st.error("⚠️ No valid XML files detected inside the uploaded ZIP archive.")
             except Exception as ex:
                 st.error(f"❌ **Reverse Pipeline Error:** {ex}")
 
     if "extracted_xlsx_data" in st.session_state:
         st.markdown("---")
         st.markdown("### 📊 Extracted Workbook Structure Preview")
+        
         for s_name, df_p in st.session_state["extracted_summary"].items():
-            with st.expander(f"📋 Sheet: {s_name} ({len(df_p)} Rows)", expanded=True):
+            with st.expander(f"📋 Sheet: {s_name} ({len(df_p)} Rows Detected)", expanded=True):
                 st.dataframe(df_p, use_container_width=True)
-        st.download_button(label="📥 DOWNLOAD EXTRACTED EXCEL WORKBOOK", data=st.session_state["extracted_xlsx_data"], file_name=st.session_state["extracted_xlsx_name"], mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-
-
+                
+        st.download_button(
+            label=f"📥 DOWNLOAD EXTRACTED EXCEL WORKBOOK ({st.session_state['extracted_xlsx_name']})",
+            data=st.session_state["extracted_xlsx_data"],
+            file_name=st.session_state["extracted_xlsx_name"],
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+        
 # ==========================================
 # --- TAB 3: MOCK DATA GENERATOR ---
 # ==========================================
