@@ -321,7 +321,7 @@ with tab_forward:
                         "PERSONAL": ("STUDENT_Personal_INFO", "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "STUDENT_BASIC_PERSONAL"),
                         "PARENT": ("Student_Parent", "FULL_SFS_STUDENT_PARENT_MK", "STUDENT_PARENT"),
                         "CUSTODIAL": ("custodial_info_mk", "FULL_SFS_STUDENT_CUSTODIAL_INFO_MK", "STUDENT_CUSTODIAL_INFO_MK"),
-                        "SCHOOL": ("basic_school", "FULL_SFF_STUDENT_BASIC_SCHOOL_MK", "STUDENT_BASIC_SCHOOL"),
+                        "SCHOOL": ("basic_school", "FULL_SFS_STUDENT_BASIC_SCHOOL_MK", "STUDENT_BASIC_SCHOOL"),
                         "MOVEMENT": ("STUDENT_Movement_INFO", "FULL_SFS_MOVEMENT_MK", "MOVEMENT")
                     }
                     
