@@ -8,7 +8,7 @@ import random
 import xml.dom.minidom
 
 #def prettify_xml(elem):
-    """Giúp XML có thụt lề, dễ nhìn hơn"""
+    #"""Giúp XML có thụt lề, dễ nhìn hơn"""
     #rough_string = ET.tostring(elem, 'utf-8')
     #reparsed = xml.dom.minidom.parseString(rough_string)
     #return reparsed.toprettyxml(indent="  ")
