@@ -395,7 +395,7 @@ with tab_forward:
                             xml_content = prettify_xml(xml_obj)
                 
                             st.code(
-                                ml_content[:3000] + ("\n... [Nội dung đã bị cắt bớt để tối ưu hiển thị]" if len(xml_content) > 3000 else ""), 
+                                xml_content[:3000] + ("\n... [Nội dung đã bị cắt bớt để tối ưu hiển thị]" if len(xml_content) > 3000 else ""), 
                                 language="xml"
                             )
                 # -------------------------------
