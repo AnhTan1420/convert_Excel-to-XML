@@ -334,10 +334,11 @@ with tab_forward:
                         for col in TEMPLATE_COLUMNS[detected_mode]:
                             val = row.get(col, "").strip()
                             if col in ["UNIQUE_ID", "STUDENT_UNIQUE_ID", "PARENT_UNIQUE_ID"] and val:
-                                if col == "STUDENT_UNIQUE_ID":
-                                   item.set('UNIQUE_ID', 'Y')
-                                ET.SubElement(item, col).text = val
-                            elif val:
+                                tag_name = tag_mapping.get(detected_mode, "STUDENT_UNIQUE_ID")
+                                element = ET.SubElement(item, tag_name)
+                                element.set('UNIQUE_ID', 'Y')
+                                element.text = val
+                            elif val and val != "nan":
                                 ET.SubElement(item, col).text = val
                             else:
                                 ET.SubElement(item, col).set(f"{{{NS_XSI}}}nil", "true")
