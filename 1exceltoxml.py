@@ -394,7 +394,10 @@ with tab_forward:
                         with st.expander(f"📄 Xem trước: {file_key}"):
                             xml_content = prettify_xml(xml_obj)
                 
-                            st.code(ml_content[:3000] + ("\n... [Nội dung đã bị cắt bớt để tối ưu hiển thị]" if len(xml_content) > 3000 else ""), language="xml")
+                            st.code(
+                                ml_content[:3000] + ("\n... [Nội dung đã bị cắt bớt để tối ưu hiển thị]" if len(xml_content) > 3000 else ""), 
+                                language="xml"
+                            )
                 # -------------------------------
             except Exception as e:
                 st.error(f"❌ **Pipeline Failure:** {e}")
