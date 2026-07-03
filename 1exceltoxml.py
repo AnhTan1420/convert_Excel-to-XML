@@ -228,6 +228,7 @@ with tab_forward:
                         
                         root_pers = ET.Element('INTERFACE', {'INTERFACE_NAME': 'basic_school', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}.xml', 'NO_RECORD': str(len(student_records))})
                         for st_rec in student_records:
+                            item = ET.SubElement(root_pers, 'STUDENT_BASIC_SCHOOL')
                             ET.SubElement(item, 'STUDENT_STATUS_ICODE').text = 'A'
                             ET.SubElement(item, 'SCHOOL_CODE').text = str(random.randint(2300, 2350))
                             ET.SubElement(item, 'ACADEMIC_YEAR').text = '2026'
@@ -309,7 +310,7 @@ with tab_forward:
                         "PERSONAL": ("STUDENT_Personal_INFO", "FULL_SFS_STUDENT_BASIC_PERSONAL_MK", "STUDENT_BASIC_PERSONAL"),
                         "PARENT": ("Student_Parent", "FULL_SFS_STUDENT_PARENT_MK", "STUDENT_PARENT"),
                         "CUSTODIAL": ("custodial_info_mk", "FULL_SFS_STUDENT_CUSTODIAL_INFO_MK", "STUDENT_CUSTODIAL_INFO_MK"),
-                        "SCHOOL": ("STUDENT_School_INFO", "FULL_SFF_STUDENT_BASIC_SCHOOL_MK", "STUDENT_BASIC_SCHOOL"),
+                        "SCHOOL": ("basic_school", "FULL_SFF_STUDENT_BASIC_SCHOOL_MK", "STUDENT_BASIC_SCHOOL"),
                         "MOVEMENT": ("STUDENT_Movement_INFO", "FULL_SFS_MOVEMENT_MK", "MOVEMENT")
                     }
                     
