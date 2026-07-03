@@ -23,6 +23,7 @@ relation_codes_list = ['F', 'M', 'G', 'G4']
 sex_codes_list = ['M', 'F']
 boolean_list = ['Y', 'N']
 res_types_list = ['HDB', 'CONDO', 'LANDED']
+school_names_pool = ['Anchor Green Primary School', 'CHIJ Primary (Toapayoh)', 'Edgefield Primary School', 'Rosyth School', 'Raffles Institution']
 
 def random_uin_generator():
     prefix = random.choice(['S', 'T', 'G', 'F', 'M'])
@@ -226,9 +227,9 @@ with tab_forward:
                             ET.SubElement(item, 'PR_TYPE').text = 'N'
                         generated_xmls[f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}'] = root_pers
                         
-                        root_pers = ET.Element('INTERFACE', {'INTERFACE_NAME': 'basic_school', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}.xml', 'NO_RECORD': str(len(student_records))})
+                        root_sch = ET.Element('INTERFACE', {'INTERFACE_NAME': 'basic_school', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}.xml', 'NO_RECORD': str(len(student_records))})
                         for st_rec in student_records:
-                            item = ET.SubElement(root_pers, 'STUDENT_BASIC_SCHOOL')
+                            item = ET.SubElement(root_sch, 'STUDENT_BASIC_SCHOOL')
                             ET.SubElement(item, 'STUDENT_STATUS_ICODE').text = 'A'
                             ET.SubElement(item, 'SCHOOL_CODE').text = str(random.randint(2300, 2350))
                             ET.SubElement(item, 'ACADEMIC_YEAR').text = '2026'
@@ -246,7 +247,7 @@ with tab_forward:
                             ET.SubElement(item, 'JC_PROVISIONAL_IND', nil_attrib)
                             ET.SubElement(item, 'POSTED_IND', nil_attrib)
                             ET.SubElement(item, 'IP_IND', nil_attrib)
-                        generated_xmls[f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}'] = root_pers
+                        generated_xmls[f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}'] = root_sch
                         
                     # Chỉ tạo thêm PARENT và CUSTODIAL (Đủ bộ 4 tệp) khi file có chứa bản ghi nhóm Parent
                     if parent_records:
