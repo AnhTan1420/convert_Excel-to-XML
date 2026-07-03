@@ -228,7 +228,7 @@ with tab_forward:
                         generated_xmls[f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}'] = root_pers
                         
                        root_sch = ET.Element('INTERFACE', {'INTERFACE_NAME': 'basic_school', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}.xml', 'NO_RECORD': str(len(student_records))})
-                       for idx, st_rec in enumerate(student_records, start=1):
+                       for st_rec in student_records:
                             item = ET.SubElement(root_sch, 'STUDENT_BASIC_SCHOOL')
                         
                             ET.SubElement(item, 'RECORD_ID').text = str(idx)
