@@ -225,7 +225,28 @@ with tab_forward:
                             ET.SubElement(item, 'RACE_REQUEST_DATE').text = '20200101'
                             ET.SubElement(item, 'PR_TYPE').text = 'N'
                         generated_xmls[f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}'] = root_pers
-
+                        
+                        root_pers = ET.Element('INTERFACE', {'INTERFACE_NAME': 'basic_school', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}.xml', 'NO_RECORD': str(len(student_records))})
+                        for st_rec in student_records:
+                            ET.SubElement(item, 'STUDENT_STATUS_ICODE').text = 'A'
+                            ET.SubElement(item, 'SCHOOL_CODE').text = str(random.randint(2300, 2350))
+                            ET.SubElement(item, 'ACADEMIC_YEAR').text = '2026'
+                            ET.SubElement(item, 'LEVEL_XCODE').text = '11'
+                            ET.SubElement(item, 'STREAM_XCODE').text = '00'
+                            ET.SubElement(item, 'CLASS_XCODE').text = 'P1-01'
+                            ET.SubElement(item, 'ACAD_STATUS_ICODE').text = 'PR'
+                            ET.SubElement(item, 'SCHOOL_NAME').text = random.choice(school_names_pool)
+                            ET.SubElement(item, 'CLASS_NAME').text = 'P1-01'
+                            ET.SubElement(item, 'LEVEL_NAME').text = 'P1'
+                            ET.SubElement(item, 'STREAM_NAME').text = 'NIL'
+                            ET.SubElement(item, 'INTF_PROMOTION_IND').text = 'N'
+                            ET.SubElement(item, 'RECOMMENDED_LEVEL_XCODE', nil_attrib)
+                            ET.SubElement(item, 'RECOMMENDED_STREAM_XCODE', nil_attrib)
+                            ET.SubElement(item, 'JC_PROVISIONAL_IND', nil_attrib)
+                            ET.SubElement(item, 'POSTED_IND', nil_attrib)
+                            ET.SubElement(item, 'IP_IND', nil_attrib)
+                        generated_xmls[f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}'] = root_pers
+                        
                     # Chỉ tạo thêm PARENT và CUSTODIAL (Đủ bộ 4 tệp) khi file có chứa bản ghi nhóm Parent
                     if parent_records:
                         paired_records = []
