@@ -5,6 +5,13 @@ import time
 import io
 import zipfile
 import random
+import xml.dom.minidom
+
+def prettify_xml(elem):
+    """Giúp XML có thụt lề, dễ nhìn hơn"""
+    rough_string = ET.tostring(elem, 'utf-8')
+    reparsed = xml.dom.minidom.parseString(rough_string)
+    return reparsed.toprettyxml(indent="  ")
 
 # App Workspace Configuration
 st.set_page_config(page_title="MOE Jordan Engine", page_icon="⚙️", layout="centered")
@@ -379,6 +386,20 @@ with tab_forward:
                     
                 st.session_state.run_summary = {"success_count": success_count, "total_records": total_rows}
                 st.toast("⚡ Conversion complete!", icon="🚀")
+                
+                if generated_xmls:
+                    st.markdown("### 👀 XML Preview")
+                    # Tạo tabs để xem từng file
+                    tab_names = list(generated_xmls.keys())
+                    tabs = st.tabs(tab_names)
+                    
+                    for i, file_key in enumerate(tab_names):
+                        with tabs[i]:
+                            xml_obj = generated_xmls[file_key]
+                            xml_content = prettify_xml(xml_obj)
+                            # Giới hạn 2000 ký tự để không bị lag trình duyệt
+                            st.code(xml_content[:2000] + ("\n... (truncated)" if len(xml_content) > 2000 else ""), language="xml")
+                # -------------------------------
             except Exception as e:
                 st.error(f"❌ **Pipeline Failure:** {e}")
 
