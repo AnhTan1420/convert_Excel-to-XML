@@ -389,16 +389,12 @@ with tab_forward:
                 
                 if generated_xmls:
                     st.markdown("### 👀 XML Preview")
-                    # Tạo tabs để xem từng file
-                    tab_names = list(generated_xmls.keys())
-                    tabs = st.tabs(tab_names)
-                    
-                    for i, file_key in enumerate(tab_names):
-                        with tabs[i]:
-                            xml_obj = generated_xmls[file_key]
+           
+                    for file_key, xml_obj in generated_xmls.items():
+                        with st.expander(f"📄 Xem trước: {file_key}"):
                             xml_content = prettify_xml(xml_obj)
-                            # Giới hạn 2000 ký tự để không bị lag trình duyệt
-                            st.code(xml_content[:2000] + ("\n... (truncated)" if len(xml_content) > 2000 else ""), language="xml")
+                
+                            st.code(ml_content[:3000] + ("\n... [Nội dung đã bị cắt bớt để tối ưu hiển thị]" if len(xml_content) > 3000 else ""), language="xml")
                 # -------------------------------
             except Exception as e:
                 st.error(f"❌ **Pipeline Failure:** {e}")
