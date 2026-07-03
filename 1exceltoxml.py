@@ -59,7 +59,7 @@ with tab_forward:
         * **When uploading `ID_MAPPING`:**
           * If only Student Node exist: Generates **3 structural ZIP files** (`ID_MAPPING` & `BASIC_PERSONAL & BASIC_SCHOOL`).
           * If Student & Parent node exist: Generates **5 structural ZIP files** (`ID_MAPPING` & `BASIC_PERSONAL' & 'BASIC_SCHOOL' & 'PARENT` & `CUSTODIAL`).
-        * **When uploading `BASIC_PERSONAL` / 'BASIC_SCHOOL' / `STUDENT_PARENT` / `STUDENT_CUSTODIAL`:**
+        * **When uploading `BASIC_PERSONAL` / `BASIC_SCHOOL` / `STUDENT_PARENT` / `STUDENT_CUSTODIAL`:**
           * Downloads matching separate individual payload files.
         """)
 
