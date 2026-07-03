@@ -234,29 +234,29 @@ with tab_forward:
                             ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = st_rec["id"]
                             ET.SubElement(item, 'STUDENT_STATUS_ICODE').text = 'A'
                             ET.SubElement(item, 'SCHOOL_CODE').text = str(random.randint(2300, 2350))
-                            ET.SubElement(item, f"{{{NS_XSI}}}ADMISSION_NO").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'ADMISSION_NO').set(f"{{{NS_XSI}}}nil", "true")
                             ET.SubElement(item, 'ACADEMIC_YEAR').text = '2026'
                             ET.SubElement(item, 'LEVEL_XCODE').text = '14' 
                             ET.SubElement(item, 'STREAM_XCODE').text = '00'
                             ET.SubElement(item, 'CLASS_XCODE').text = 'P4-01'
-                            ET.SubElement(item, 'CLASS_SERIAL_NO").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, 'COURSE_TYPE_CODE").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, 'LEAVE_OF_ABSENCE_IND").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'CLASS_SERIAL_NO').set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'COURSE_TYPE_CODE').set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'LEAVE_OF_ABSENCE_IND').set(f"{{{NS_XSI}}}nil", "true")
                             ET.SubElement(item, 'ACAD_STATUS_ICODE').text = 'PR'
-                            ET.SubElement(item, 'EFFECTIVE_DATE").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'EFFECTIVE_DATE').set(f"{{{NS_XSI}}}nil", "true")
                             ET.SubElement(item, 'SCHOOL_NAME').text = random.choice(school_names_pool)
                             ET.SubElement(item, 'CLASS_NAME').text = 'P4-01'
                             ET.SubElement(item, 'LEVEL_NAME').text = 'P4'
                             ET.SubElement(item, 'STREAM_NAME').text = 'NIL'
-                            ET.SubElement(item, 'COURSE_XCODE").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, 'COURSE_NAME").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, 'COURSE_TYPE_NAME").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'COURSE_XCODE').set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'COURSE_NAME').set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'COURSE_TYPE_NAME').set(f"{{{NS_XSI}}}nil", "true")
                             ET.SubElement(item, 'INTF_PROMOTION_IND').text = 'N'
-                            ET.SubElement(item, 'RECOMMENDED_LEVEL_XCODE").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, 'RECOMMENDED_STREAM_XCODE").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, 'JC_PROVISIONAL_IND").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, 'POSTED_IND").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, 'IP_IND").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'RECOMMENDED_LEVEL_XCODE').set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'RECOMMENDED_STREAM_XCODE').set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'JC_PROVISIONAL_IND').set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'POSTED_IND').set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'IP_IND').set(f"{{{NS_XSI}}}nil", "true")
                         generated_xmls[f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}'] = root_sch
                         
                     # Chỉ tạo thêm PARENT và CUSTODIAL (Đủ bộ 4 tệp) khi file có chứa bản ghi nhóm Parent
