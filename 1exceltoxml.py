@@ -135,7 +135,7 @@ with tab_forward:
                 st.write(f"🔍 **Engine Status:** Detected input data structure matches layout: **{detected_mode}**")
                 generated_xmls = {}
 
-                # --- CẢI TIẾN LOGIC CHO MAPPING MODE ---
+                # --- MAPPING MODE PROCESSING ---
                 if detected_mode == "MAPPING":
                     student_records = []
                     parent_records = []
@@ -146,7 +146,7 @@ with tab_forward:
                         pt_uin = row.get("PARENT_UIN_FIN_NO", "").strip()
                         
                         if uid:
-                            # Nếu có PARENT_UIN_FIN_NO thì xác định là Parent node (Bất kể student UIN có giá trị hay không)
+                            # Nếu dòng có PARENT_UIN_FIN_NO -> Xác định thuộc nhóm Parent Node phục vụ đếm luồng sinh file
                             if pt_uin:
                                 parent_records.append({"id": uid, "uin": pt_uin})
                             elif st_uin:
@@ -158,16 +158,12 @@ with tab_forward:
                     
                     for _, row in df_input.iterrows():
                         uid = row.get("UNIQUE_ID", "").strip()
-                        pt_uin = row.get("PARENT_UIN_FIN_NO", "").strip()
                         
                         item = ET.SubElement(root_map, 'ID_Mapping', {'UNIQUE_ID': uid})
                         for col in ["STUDENT_UIN_FIN_NO", "PARENT_UIN_FIN_NO", "STUDENT_UINFIN_TYPE_ICODE", "PREV_NRIC_UIN_FIN_NO"]:
                             val = row.get(col, "").strip()
                             
-                            # Cải tiến: Nếu là dòng Parent Node nhưng STUDENT_UIN_FIN_NO có giá trị -> Force về rỗng để hiển thị null trong XML
-                            if col == "STUDENT_UIN_FIN_NO" and pt_uin:
-                                val = ""
-                                
+                            # Đã loại bỏ logic ép rỗng ở đây để GIỮ NGUYÊN GIÁ TRỊ gốc từ file Excel khi xuất XML
                             if val: 
                                 ET.SubElement(item, col).text = val
                             else: 
@@ -230,7 +226,7 @@ with tab_forward:
                             ET.SubElement(item, 'PR_TYPE').text = 'N'
                         generated_xmls[f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}'] = root_pers
 
-                    # Cải tiến: CHỈ tạo PARENT và CUSTODIAL (4 tệp) khi file có dữ liệu Parent Node
+                    # Chỉ tạo thêm PARENT và CUSTODIAL (Đủ bộ 4 tệp) khi file có chứa bản ghi nhóm Parent
                     if parent_records:
                         paired_records = []
                         min_len = min(len(student_records), len(parent_records))
@@ -314,7 +310,7 @@ with tab_forward:
                                 ET.SubElement(item, col).set(f"{{{NS_XSI}}}nil", "true")
                     generated_xmls[f'{prefix_fn}_{current_time}'] = root_node
                 else:
-                    st.error("❌ **Structure Error:** Unknown Excel template headers. Please check the sample templates above.")
+                    st.error("❌ **Structure Error:** Unknown Excel template headers. Please check the sample templates.")
                     st.stop()
 
                 success_count = 0
@@ -355,7 +351,7 @@ with tab_forward:
             with st.container(border=True):
                 st.markdown(f"🔹 **Target Interface Payload:** `{item['zip_name']}` | **Size:** {item['records']} elements")
                 st.download_button(label="📦 Download " + item['zip_name'], data=item['zip_data'], file_name=item['zip_name'], mime="application/zip", key=f"btn_{item['zip_name']}", use_container_width=True)
-
+                
 # ==========================================
 # --- TAB 2: REVERSE ENGINE (ZIP -> XLSX) ---
 # ==========================================
