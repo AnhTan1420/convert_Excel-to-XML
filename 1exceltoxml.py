@@ -25,6 +25,9 @@ boolean_list = ['Y', 'N']
 res_types_list = ['HDB', 'CONDO', 'LANDED']
 school_names_pool = ['Anchor Green Primary School', 'CHIJ Primary (Toapayoh)', 'Edgefield Primary School', 'Rosyth School', 'Raffles Institution']
 
+def generate_hex_id():
+    return "".join(random.choice("0123456789abcdef") for _ in range(32))
+
 def random_uin_generator():
     prefix = random.choice(['S', 'T', 'G', 'F', 'M'])
     digits = "".join([str(random.randint(0, 9)) for _ in range(7)])
@@ -76,15 +79,16 @@ with tab_forward:
         return buffer.getvalue()
 
     with st.expander("📥 Download Excel Sample Templates", expanded=False):
-        st.markdown("Select the School Cockpit MK template type below to download the standard Excel file structure:")
-        col_t1, col_t2, col_t3, col_t4, col_t5, col_t6 = st.columns(6)
+        col_t1, col_t2, col_t3 = st.columns(3)
         with col_t1: st.download_button("📁 ID_MAPPING", generate_template(TEMPLATE_COLUMNS["MAPPING"]), "Template_ID_MAPPING.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
         with col_t2: st.download_button("📁 PERSONAL", generate_template(TEMPLATE_COLUMNS["PERSONAL"]), "Template_BASIC_PERSONAL.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-        with col_t3: st.download_button("📁 PARENT", generate_template(TEMPLATE_COLUMNS["PARENT"]), "Template_STUDENT_PARENT.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-        with col_t4: st.download_button("📁 CUSTODIAL", generate_template(TEMPLATE_COLUMNS["CUSTODIAL"]), "Template_STUDENT_CUSTODIAL.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-        with col_t5: st.download_button("📁 SCHOOL", generate_template(TEMPLATE_COLUMNS["SCHOOL"]), "Template_BASIC_SCHOOL.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-        with col_t6: st.download_button("📁 MOVEMENT", generate_template(TEMPLATE_COLUMNS["MOVEMENT"]), "Template_MOVEMENT.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
-       
+        with col_t3: st.download_button("📁 SCHOOL", generate_template(TEMPLATE_COLUMNS["SCHOOL"]), "Template_BASIC_SCHOOL.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+        
+        col_t4, col_t5, col_t6 = st.columns(3)
+        with col_t4: st.download_button("📁 PARENT", generate_template(TEMPLATE_COLUMNS["PARENT"]), "Template_STUDENT_PARENT.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+        with col_t5: st.download_button("📁 MOVEMENT", generate_template(TEMPLATE_COLUMNS["MOVEMENT"]), "Template_MOVEMENT.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+        with col_t6: st.download_button("📁 CUSTODIAL", generate_template(TEMPLATE_COLUMNS["CUSTODIAL"]), "Template_STUDENT_CUSTODIAL.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
+
     def clear_forward_pipeline_cache():
         st.session_state.pipeline_download_queue = []
         st.session_state.run_summary = {"success_count": 0, "total_records": 0}
@@ -157,10 +161,10 @@ with tab_forward:
                     
                     idx = 1
                     for _, row in df_input.iterrows():
-                        uid = row.get("UNIQUE_ID", "").strip() or uuid.uuid4().hex
+                        uid = row.get("UNIQUE_ID", "").strip() or generate_hex_id()
                         st_uin = row.get("STUDENT_UIN_FIN_NO", "").strip() or random_uin_generator()
                         pt_uin = row.get("PARENT_UIN_FIN_NO", "").strip() or random_uin_generator()
-                        p_uid = uuid.uuid4().hex
+                        p_uid = generate_hex_id()
                         rel_code = random.choice(relation_codes_list)
                         
                         # Mock Personal Data
@@ -273,7 +277,7 @@ with tab_forward:
             with st.container(border=True):
                 st.markdown(f"🔹 **Target Interface Payload:** `{item['zip_name']}` | **Size:** {item['records']} elements")
                 st.download_button(label="📦 Download " + item['zip_name'], data=item['zip_data'], file_name=item['zip_name'], mime="application/zip", key=f"btn_{item['zip_name']}", use_container_width=True)
-
+                
 # ==========================================
 # --- TAB 2: REVERSE ENGINE (ZIP -> XLSX) ---
 # ==========================================
