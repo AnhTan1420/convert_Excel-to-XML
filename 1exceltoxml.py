@@ -85,7 +85,7 @@ with tab_forward:
         with col_t5: st.download_button("📁 SCHOOL", generate_template(TEMPLATE_COLUMNS["SCHOOL"]), "Template_BASIC_SCHOOL.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
         with col_t6: st.download_button("📁 MOVEMENT", generate_template(TEMPLATE_COLUMNS["MOVEMENT"]), "Template_MOVEMENT.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
        
-def clear_forward_pipeline_cache():
+    def clear_forward_pipeline_cache():
         st.session_state.pipeline_download_queue = []
         st.session_state.run_summary = {"success_count": 0, "total_records": 0}
 
