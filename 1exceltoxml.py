@@ -341,7 +341,7 @@ with tab_forward:
                         item = ET.SubElement(root_node, row_tag)
                         for col in TEMPLATE_COLUMNS[detected_mode]:
                             val = row.get(col, "").strip()
-                            if col == "UNIQUE_ID" and val:
+                            if col in ["UNIQUE_ID", "STUDENT_UNIQUE_ID", "PARENT_UNIQUE_ID"] and val:
                                 tag_name = tag_mapping.get(detected_mode, "STUDENT_UNIQUE_ID")
                                 element = ET.SubElement(item, tag_name)
                                 element.set('UNIQUE_ID', 'Y')
