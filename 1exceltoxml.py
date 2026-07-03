@@ -228,51 +228,49 @@ with tab_forward:
                         generated_xmls[f'FULL_SFS_STUDENT_BASIC_PERSONAL_MK_{current_time}'] = root_pers
                         
                        root_sch = ET.Element('INTERFACE', {'INTERFACE_NAME': 'basic_school', 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}.xml', 'NO_RECORD': str(len(student_records))})
-                    for idx, st_rec in enumerate(student_records, start=1):
-                        item = ET.SubElement(root_sch, 'STUDENT_BASIC_SCHOOL')
+                       for idx, st_rec in enumerate(student_records, start=1):
+                            item = ET.SubElement(root_sch, 'STUDENT_BASIC_SCHOOL')
                         
-                        # --- THÀNH PHẦN ĐỊNH DANH (BỊ THIẾU) ---
-                        ET.SubElement(item, 'RECORD_ID').text = str(idx)
-                        ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = st_rec["id"]
+                            ET.SubElement(item, 'RECORD_ID').text = str(idx)
+                            ET.SubElement(item, 'STUDENT_UNIQUE_ID', {'UNIQUE_ID': 'Y'}).text = st_rec["id"]
                         
                         # --- THÔNG TIN TRƯỜNG LỚP ---
-                        ET.SubElement(item, 'STUDENT_STATUS_ICODE').text = 'A'
-                        ET.SubElement(item, 'SCHOOL_CODE').text = str(random.randint(2300, 2350))
-                        ET.SubElement(item, f"{{{NS_XSI}}}ADMISSION_NO").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'STUDENT_STATUS_ICODE').text = 'A'
+                            ET.SubElement(item, 'SCHOOL_CODE').text = str(random.randint(2300, 2350))
+                            ET.SubElement(item, f"{{{NS_XSI}}}ADMISSION_NO").set(f"{{{NS_XSI}}}nil", "true")
                         
-                        ET.SubElement(item, 'ACADEMIC_YEAR').text = '2026'
-                        ET.SubElement(item, 'LEVEL_XCODE').text = '14'  # Thay đổi thành 14 để khớp mẫu P4 công ty
-                        ET.SubElement(item, 'STREAM_XCODE').text = '00'
-                        ET.SubElement(item, 'CLASS_XCODE').text = 'P4-01'
+                            ET.SubElement(item, 'ACADEMIC_YEAR').text = '2026'
+                            ET.SubElement(item, 'LEVEL_XCODE').text = '14'  # Thay đổi thành 14 để khớp mẫu P4 công ty
+                            ET.SubElement(item, 'STREAM_XCODE').text = '00'
+                            ET.SubElement(item, 'CLASS_XCODE').text = 'P4-01'
                         
                         # --- CÁC THẺ TRỐNG ĐỊNH DẠNG NIL ---
-                        ET.SubElement(item, f"{{{NS_XSI}}}CLASS_SERIAL_NO").set(f"{{{NS_XSI}}}nil", "true")
-                        ET.SubElement(item, f"{{{NS_XSI}}}COURSE_TYPE_CODE").set(f"{{{NS_XSI}}}nil", "true")
-                        ET.SubElement(item, f"{{{NS_XSI}}}LEAVE_OF_ABSENCE_IND").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, f"{{{NS_XSI}}}CLASS_SERIAL_NO").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, f"{{{NS_XSI}}}COURSE_TYPE_CODE").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, f"{{{NS_XSI}}}LEAVE_OF_ABSENCE_IND").set(f"{{{NS_XSI}}}nil", "true")
                         
-                        ET.SubElement(item, 'ACAD_STATUS_ICODE').text = 'PR'
-                        ET.SubElement(item, f"{{{NS_XSI}}}EFFECTIVE_DATE").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'ACAD_STATUS_ICODE').text = 'PR'
+                            ET.SubElement(item, f"{{{NS_XSI}}}EFFECTIVE_DATE").set(f"{{{NS_XSI}}}nil", "true")
                         
                         # --- CHI TIẾT HIỂN THỊ ---
-                        ET.SubElement(item, 'SCHOOL_NAME').text = random.choice(school_names_pool)
-                        ET.SubElement(item, 'CLASS_NAME').text = 'P4-01'
-                        ET.SubElement(item, 'LEVEL_NAME').text = 'P4'
-                        ET.SubElement(item, 'STREAM_NAME').text = 'NIL'
+                            ET.SubElement(item, 'SCHOOL_NAME').text = random.choice(school_names_pool)
+                            ET.SubElement(item, 'CLASS_NAME').text = 'P4-01'
+                            ET.SubElement(item, 'LEVEL_NAME').text = 'P4'
+                            ET.SubElement(item, 'STREAM_NAME').text = 'NIL'
                         
                         # --- CÁC THÈ KHÁC BẮT BUỘC NIL ĐỂ TRÁNH LỖI SCHEMA ---
-                        ET.SubElement(item, f"{{{NS_XSI}}}COURSE_XCODE").set(f"{{{NS_XSI}}}nil", "true")
-                        ET.SubElement(item, f"{{{NS_XSI}}}COURSE_NAME").set(f"{{{NS_XSI}}}nil", "true")
-                        ET.SubElement(item, f"{{{NS_XSI}}}COURSE_TYPE_NAME").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, f"{{{NS_XSI}}}COURSE_XCODE").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, f"{{{NS_XSI}}}COURSE_NAME").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, f"{{{NS_XSI}}}COURSE_TYPE_NAME").set(f"{{{NS_XSI}}}nil", "true")
                         
-                        ET.SubElement(item, 'INTF_PROMOTION_IND').text = 'N'
+                            ET.SubElement(item, 'INTF_PROMOTION_IND').text = 'N'
                         
-                        ET.SubElement(item, f"{{{NS_XSI}}}RECOMMENDED_LEVEL_XCODE").set(f"{{{NS_XSI}}}nil", "true")
-                        ET.SubElement(item, f"{{{NS_XSI}}}RECOMMENDED_STREAM_XCODE").set(f"{{{NS_XSI}}}nil", "true")
-                        ET.SubElement(item, f"{{{NS_XSI}}}JC_PROVISIONAL_IND").set(f"{{{NS_XSI}}}nil", "true")
-                        ET.SubElement(item, f"{{{NS_XSI}}}POSTED_IND").set(f"{{{NS_XSI}}}nil", "true")
-                        ET.SubElement(item, f"{{{NS_XSI}}}IP_IND").set(f"{{{NS_XSI}}}nil", "true")
-                        
-                    generated_xmls[f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}'] = root_sch
+                            ET.SubElement(item, f"{{{NS_XSI}}}RECOMMENDED_LEVEL_XCODE").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, f"{{{NS_XSI}}}RECOMMENDED_STREAM_XCODE").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, f"{{{NS_XSI}}}JC_PROVISIONAL_IND").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, f"{{{NS_XSI}}}POSTED_IND").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, f"{{{NS_XSI}}}IP_IND").set(f"{{{NS_XSI}}}nil", "true")
+                      generated_xmls[f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}'] = root_sch
                         
                     # Chỉ tạo thêm PARENT và CUSTODIAL (Đủ bộ 4 tệp) khi file có chứa bản ghi nhóm Parent
                     if parent_records:
