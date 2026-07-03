@@ -6,18 +6,12 @@ import io
 import zipfile
 import random
 import xml.dom.minidom
-import xml.etree.ElementTree as ET
 
-def get_xml_string(elem):
-    """Trả về chuỗi XML chuẩn, không thụt lề"""
-    # encoding='unicode' sẽ trả về kiểu str thay vì bytes
-    return ET.tostring(elem, encoding='unicode')
-
-#def prettify_xml(elem):
-    #"""Giúp XML có thụt lề, dễ nhìn hơn"""
-    #rough_string = ET.tostring(elem, 'utf-8')
-    #reparsed = xml.dom.minidom.parseString(rough_string)
-    #return reparsed.toprettyxml(indent="  ")
+def prettify_xml(elem):
+    """Giúp XML có thụt lề, dễ nhìn hơn"""
+    rough_string = ET.tostring(elem, 'utf-8')
+    reparsed = xml.dom.minidom.parseString(rough_string)
+    return reparsed.toprettyxml(indent="")
 
 # App Workspace Configuration
 st.set_page_config(page_title="MOE Jordan Engine", page_icon="⚙️", layout="centered")
