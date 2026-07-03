@@ -242,11 +242,6 @@ with tab_forward:
                             ET.SubElement(item, 'LEVEL_NAME').text = 'P1'
                             ET.SubElement(item, 'STREAM_NAME').text = 'NIL'
                             ET.SubElement(item, 'INTF_PROMOTION_IND').text = 'N'
-                            ET.SubElement(item, 'RECOMMENDED_LEVEL_XCODE', nil_attrib)
-                            ET.SubElement(item, 'RECOMMENDED_STREAM_XCODE', nil_attrib)
-                            ET.SubElement(item, 'JC_PROVISIONAL_IND', nil_attrib)
-                            ET.SubElement(item, 'POSTED_IND', nil_attrib)
-                            ET.SubElement(item, 'IP_IND', nil_attrib)
                         generated_xmls[f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}'] = root_sch
                         
                     # Chỉ tạo thêm PARENT và CUSTODIAL (Đủ bộ 4 tệp) khi file có chứa bản ghi nhóm Parent
