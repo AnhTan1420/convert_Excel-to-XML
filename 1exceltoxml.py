@@ -6,6 +6,12 @@ import io
 import zipfile
 import random
 import xml.dom.minidom
+import xml.etree.ElementTree as ET
+
+def get_xml_string(elem):
+    """Trả về chuỗi XML chuẩn, không thụt lề"""
+    # encoding='unicode' sẽ trả về kiểu str thay vì bytes
+    return ET.tostring(elem, encoding='unicode')
 
 #def prettify_xml(elem):
     #"""Giúp XML có thụt lề, dễ nhìn hơn"""
