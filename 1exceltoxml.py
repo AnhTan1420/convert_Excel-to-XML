@@ -329,7 +329,7 @@ with tab_forward:
                     root_node = ET.Element('INTERFACE', {'INTERFACE_NAME': intf_name, 'FILE_CREATED_TIME': epoch_ms, 'FILE_NAME': f'{prefix_fn}_{current_time}.xml', 'NO_RECORD': str(len(df_input))})
                     ET.register_namespace('xs', NS_XSI)
                     
-                    tag_name = {
+                    tag_mapping = {
                         "Personal": "STUDENT_UNIQUE_ID",
                         "Parent": "PARENT_UNIQUE_ID",
                         "School": "STUDENT_UNIQUE_ID",
