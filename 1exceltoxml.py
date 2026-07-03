@@ -85,8 +85,7 @@ with tab_forward:
         with col_t5: st.download_button("📁 SCHOOL", generate_template(TEMPLATE_COLUMNS["SCHOOL"]), "Template_BASIC_SCHOOL.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
         with col_t6: st.download_button("📁 MOVEMENT", generate_template(TEMPLATE_COLUMNS["MOVEMENT"]), "Template_MOVEMENT.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", use_container_width=True)
        
-
-    def clear_forward_pipeline_cache():
+def clear_forward_pipeline_cache():
         st.session_state.pipeline_download_queue = []
         st.session_state.run_summary = {"success_count": 0, "total_records": 0}
 
@@ -94,7 +93,6 @@ with tab_forward:
     uploaded_any_file = st.file_uploader(
         "Upload ANY single template file (.xlsx or .csv) to generate corresponding XML/ZIP files.", 
         type=["xlsx", "csv"], 
-        accept_multiple_files=False, 
         key="forward_uploader",
         on_change=clear_forward_pipeline_cache
     )
@@ -159,10 +157,10 @@ with tab_forward:
                     
                     idx = 1
                     for _, row in df_input.iterrows():
-                        uid = row.get("UNIQUE_ID", "").strip() or secrets.token_hex(16)
+                        uid = row.get("UNIQUE_ID", "").strip() or uuid.uuid4().hex
                         st_uin = row.get("STUDENT_UIN_FIN_NO", "").strip() or random_uin_generator()
                         pt_uin = row.get("PARENT_UIN_FIN_NO", "").strip() or random_uin_generator()
-                        p_uid = secrets.token_hex(16)
+                        p_uid = uuid.uuid4().hex
                         rel_code = random.choice(relation_codes_list)
                         
                         # Mock Personal Data
