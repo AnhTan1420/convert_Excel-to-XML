@@ -34,7 +34,7 @@ def random_uin_generator():
 TEMPLATE_COLUMNS = {
     "MAPPING": ["UNIQUE_ID", "STUDENT_UIN_FIN_NO", "PARENT_UIN_FIN_NO", "STUDENT_UINFIN_TYPE_ICODE", "PREV_NRIC_UIN_FIN_NO"],
     "PERSONAL": ["RECORD_ID", "UNIQUE_ID", "STUDENT_NAME", "HANYU_PINYIN_NAME", "BIRTH_DATE", "CITIZENSHIP_CODE", "CITIZENSHIP_SGDRM_CODE", "RACE_CODE", "RELIGION_CODE", "RELIGION_SGDRM_CODE", "SEX_CODE", "EMAIL_ADDRESS", "CITIZENSHIP_EFFECTIVE_DATE", "CONTACT_SAMEAS_OFFICIAL_IND", "CONTACTADD_BLK_HSE_NO", "CONTACTADD_STREET_NAME", "CONTACTADD_FLOOR_NO", "CONTACTADD_UNIT_NO", "CONTACTADD_BLDG_NAME", "CONTACTADD_POSTAL_ECODE", "TELEPHONE_NO", "HANDPHONE_NO", "OTHER_CONTACT_NO", "RES_TYPE_CODE", "OFFICIALADD_BLK_HSE_NO", "OFFICIALADD_STREET_NAME", "OFFICIALADD_FLOOR_NO", "OFFICIALADD_UNIT_NO", "OFFICIALADD_BLDG_NAME", "OFFICIALADD_POSTAL_ECODE", "FOREIGNADD_LINE1_DESC", "FOREIGNADD_LINE2_DESC", "FOREIGNADD_POSTAL_ECODE", "FOREIGNADD_COUNTRY_CODE", "FOREIGNADD_CONTACTCODE_NO_OLD", "FOREIGNADD_CONTACT_NO_OLD", "FOREIGNADD_CONTACTCODE_NO", "FOREIGNADD_CONTACT_NO", "FOREIGNADD_COUNTRY_SGDRM_CODE", "ADDRESS_IND", "CONTACTADD_STREET_CODE", "OFFICIALADD_STREET_CODE", "GUARDIAN_TYPE_ICODE", "PASS_TYPE_CODE", "PASS_ISSUE_DATE", "PASS_EXPIRY_DATE", "RACE_REQUEST_DATE", "PR_TYPE"],
-    "SCHOOL": ["RECORD_ID", "UNIQUE_ID", "STUDENT_STATUS_ICODE", "SCHOOL_CODE", "ADMISSION_NO", "ACADEMIC_YEAR", "LEVEL_XCODE", "STREAM_XCODE", "CLASS_XCODE", "CLASS_SERIAL_NO", "COURSE_TYPE_CODE", "FIRSTLANGUAGE_L1_CODE", "SECONDLANGUAGE_L2_CODE", "LEAVE_OF_ABSENCE_IND", "REPEAT_STUD_IND", "ACAD_STATUS_ICODE", "EFFECTIVE_DATE", "SCHOOL_NAME", "CLASS_NAME", "LEVEL_NAME", "STREAM_NAME", "COURSE_XCODE", "COURSE_NAME", "COURSE_TYPE_NAME", "INTF_PROMOTION_IND", "RECOMMENDED_LEVEL_XCODE", "RECOMMENDED_STREAM_XCODE", "JC_PROVISIONAL_IND", "POSTED_IND", "MATRICULATION_NO", "IP_IND"],
+    "SCHOOL": ["RECORD_ID", "UNIQUE_ID", "STUDENT_STATUS_ICODE", "SCHOOL_CODE", "ADMISSION_NO", "ACADEMIC_YEAR", "LEVEL_XCODE", "STREAM_XCODE", "CLASS_XCODE", "CLASS_SERIAL_NO", "COURSE_TYPE_CODE", "LEAVE_OF_ABSENCE_IND", "REPEAT_STUD_IND", "ACAD_STATUS_ICODE", "EFFECTIVE_DATE", "SCHOOL_NAME", "CLASS_NAME", "LEVEL_NAME", "STREAM_NAME", "COURSE_XCODE", "COURSE_NAME", "COURSE_TYPE_NAME", "INTF_PROMOTION_IND", "RECOMMENDED_LEVEL_XCODE", "RECOMMENDED_STREAM_XCODE", "JC_PROVISIONAL_IND", "POSTED_IND", "IP_IND"],
     "PARENT": ["RECORD_ID", "UNIQUE_ID", "PARENT_UNIQUE_ID", "RELATION_ICODE", "PARENT_GUARDIAN_NAME", "CITIZENSHIP_CODE", "RACE_CODE", "STANDARD_ATTENDED_CODE", "DECEASED_YEAR", "TELEPHONE_NO", "HANDPHONE_NO", "OTHER_CONTACT_NO", "BIRTH_DATE", "EMAIL_ADDRESS", "CITIZENSHIP_EFFECTIVE_DATE", "CITIZENSHIP_SGDRM_CODE", "PR_TYPE", "NRIC_BLK_HSE_NO", "NRIC_STREET_CODE", "NRIC_FLOOR_NO", "NRIC_UNIT_NO", "NRIC_POSTAL_ECODE"],
     "MOVEMENT": ["RECORD_ID", "UNIQUE_ID", "STRAT_DATE", "END_DATE", "REASON"],
     "CUSTODIAL": ["RECORD_ID", "UNIQUE_ID", "PARENT_UNIQUE_ID", "RELATION_ICODE", "CUSTODIAL_INFO", "RELATIONSHIP", "PG_ACCESS_IND", "LAST_UPDATED_DATE"]
@@ -239,24 +239,24 @@ with tab_forward:
                             ET.SubElement(item, 'LEVEL_XCODE').text = '14' 
                             ET.SubElement(item, 'STREAM_XCODE').text = '00'
                             ET.SubElement(item, 'CLASS_XCODE').text = 'P4-01'
-                            ET.SubElement(item, f"{{{NS_XSI}}}CLASS_SERIAL_NO").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, f"{{{NS_XSI}}}COURSE_TYPE_CODE").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, f"{{{NS_XSI}}}LEAVE_OF_ABSENCE_IND").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'CLASS_SERIAL_NO").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'COURSE_TYPE_CODE").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'LEAVE_OF_ABSENCE_IND").set(f"{{{NS_XSI}}}nil", "true")
                             ET.SubElement(item, 'ACAD_STATUS_ICODE').text = 'PR'
-                            ET.SubElement(item, f"{{{NS_XSI}}}EFFECTIVE_DATE").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'EFFECTIVE_DATE").set(f"{{{NS_XSI}}}nil", "true")
                             ET.SubElement(item, 'SCHOOL_NAME').text = random.choice(school_names_pool)
                             ET.SubElement(item, 'CLASS_NAME').text = 'P4-01'
                             ET.SubElement(item, 'LEVEL_NAME').text = 'P4'
                             ET.SubElement(item, 'STREAM_NAME').text = 'NIL'
-                            ET.SubElement(item, f"{{{NS_XSI}}}COURSE_XCODE").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, f"{{{NS_XSI}}}COURSE_NAME").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, f"{{{NS_XSI}}}COURSE_TYPE_NAME").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'COURSE_XCODE").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'COURSE_NAME").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'COURSE_TYPE_NAME").set(f"{{{NS_XSI}}}nil", "true")
                             ET.SubElement(item, 'INTF_PROMOTION_IND').text = 'N'
-                            ET.SubElement(item, f"{{{NS_XSI}}}RECOMMENDED_LEVEL_XCODE").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, f"{{{NS_XSI}}}RECOMMENDED_STREAM_XCODE").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, f"{{{NS_XSI}}}JC_PROVISIONAL_IND").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, f"{{{NS_XSI}}}POSTED_IND").set(f"{{{NS_XSI}}}nil", "true")
-                            ET.SubElement(item, f"{{{NS_XSI}}}IP_IND").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'RECOMMENDED_LEVEL_XCODE").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'RECOMMENDED_STREAM_XCODE").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'JC_PROVISIONAL_IND").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'POSTED_IND").set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'IP_IND").set(f"{{{NS_XSI}}}nil", "true")
                         generated_xmls[f'FULL_SFS_STUDENT_BASIC_SCHOOL_MK_{current_time}'] = root_sch
                         
                     # Chỉ tạo thêm PARENT và CUSTODIAL (Đủ bộ 4 tệp) khi file có chứa bản ghi nhóm Parent
@@ -311,7 +311,7 @@ with tab_forward:
                             inherited_relation = pipeline_relation_heritage.get(f"{p['student_id']}_{p['parent_id']}", "G4")
                             ET.SubElement(item, 'RELATION_ICODE').text = inherited_relation
                             ET.SubElement(item, 'CUSTODIAL_INFO').text = 'JN'
-                            ET.SubElement(item, f'{{{NS_XSI}}}RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
+                            ET.SubElement(item, 'RELATIONSHIP').set(f"{{{NS_XSI}}}nil", "true")
                             ET.SubElement(item, 'PG_ACCESS_IND').text = '2'
                             ET.SubElement(item, 'LAST_UPDATED_DATE').text = '2026-06-30'
                         generated_xmls[f'FULL_SFS_STUDENT_CUSTODIAL_INFO_MK_{current_time}'] = root_custodial
