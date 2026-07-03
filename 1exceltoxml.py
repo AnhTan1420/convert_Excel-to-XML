@@ -57,9 +57,9 @@ with tab_forward:
         st.markdown("""
         ### File Generation & Download Rules:
         * **When uploading `ID_MAPPING`:**
-          * If only Student entries exist: Generates **2 structural ZIP files** (`ID_MAPPING` & `BASIC_PERSONAL`).
-          * If Parent entries exist: Generates **4 structural ZIP files** (Includes `PARENT` & `CUSTODIAL`).
-        * **When uploading `BASIC_PERSONAL` / `STUDENT_PARENT` / `STUDENT_CUSTODIAL`:**
+          * If only Student Node exist: Generates **3 structural ZIP files** (`ID_MAPPING` & `BASIC_PERSONAL & BASIC_SCHOOL`).
+          * If Student & Parent node exist: Generates **5 structural ZIP files** (`ID_MAPPING` & `BASIC_PERSONAL' & 'BASIC_SCHOOL' & 'PARENT` & `CUSTODIAL`).
+        * **When uploading `BASIC_PERSONAL` / 'BASIC_SCHOOL' / `STUDENT_PARENT` / `STUDENT_CUSTODIAL`:**
           * Downloads matching separate individual payload files.
         """)
 
